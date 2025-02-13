@@ -1,6 +1,7 @@
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import ProductCard from '../components/ProductCard';
 
 const HomePage = () => {
   const sliderSettings = {
@@ -33,6 +34,30 @@ const HomePage = () => {
     }
   ];
 
+  const categories = [
+    {
+      id: 1,
+      title: "Unique Life",
+      subtitle: "Your Space",
+      image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35",
+      link: "#"
+    },
+    {
+      id: 2,
+      title: "Elements Style",
+      subtitle: "Ends Today",
+      image: "https://images.unsplash.com/photo-1449339854873-750e6913301b",
+      link: "#"
+    },
+    {
+      id: 3,
+      title: "Elements Style",
+      subtitle: "Ends Today",
+      image: "https://images.unsplash.com/photo-1432139555190-58524dae6a55",
+      link: "#"
+    }
+  ];
+
   return (
     <div className="flex flex-col">
       <div className="slider-container relative">
@@ -60,47 +85,31 @@ const HomePage = () => {
       </div>
 
       {/* Product Categories */}
-      <div className="container mx-auto px-4 space-y-8 mt-12">
-        {/* Category 1 */}
-        <div className="flex flex-col space-y-4">
-          <p className="text-gray-500">Your Space</p>
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-bold">Unique Life</h3>
-            <a href="#" className="text-gray-500">Explore Items</a>
-          </div>
-          <img 
-            src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35" 
-            alt="Unique Life" 
-            className="w-full h-48 object-cover rounded-lg"
-          />
+      <div className="container mx-auto px-4 py-12">
+        {/* Mobile görünüm için */}
+        <div className="flex flex-col gap-12 md:hidden">
+          {categories.map((category) => (
+            <ProductCard 
+              key={category.id}
+              title={category.title}
+              subtitle={category.subtitle}
+              image={category.image}
+              link={category.link}
+            />
+          ))}
         </div>
-
-        {/* Category 2 */}
-        <div className="flex flex-col space-y-4">
-          <p className="text-gray-500">Ends Today</p>
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-bold">Elements Style</h3>
-            <a href="#" className="text-gray-500">Explore Items</a>
-          </div>
-          <img 
-            src="https://images.unsplash.com/photo-1449339854873-750e6913301b" 
-            alt="Elements Style" 
-            className="w-full h-48 object-cover rounded-lg"
-          />
-        </div>
-
-        {/* Category 3 */}
-        <div className="flex flex-col space-y-4">
-          <p className="text-gray-500">Ends Today</p>
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-bold">Elements Style</h3>
-            <a href="#" className="text-gray-500">Explore Items</a>
-          </div>
-          <img 
-            src="https://images.unsplash.com/photo-1432139555190-58524dae6a55" 
-            alt="Elements Style" 
-            className="w-full h-48 object-cover rounded-lg"
-          />
+        
+        {/* Desktop görünüm için */}
+        <div className="hidden md:grid md:grid-cols-3 md:gap-12">
+          {categories.map((category) => (
+            <ProductCard 
+              key={category.id}
+              title={category.title}
+              subtitle={category.subtitle}
+              image={category.image}
+              link={category.link}
+            />
+          ))}
         </div>
       </div>
     </div>
