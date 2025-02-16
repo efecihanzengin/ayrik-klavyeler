@@ -35,43 +35,116 @@ const ShopPage = () => {
     }
   ];
 
-  // 36 adet ürün oluşturmak için yardımcı fonksiyon
-  const generateProducts = () => {
-    const productTemplates = [
-      {
-        title: "Graphic Design Hoodie",
-        department: "English Department",
-        price: "$16.48",
-        salePrice: "$6.48",
-        image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35",
-        colors: ["blue", "green", "red", "brown"]
-      },
-      {
-        title: "Basic Tee",
-        department: "Fashion Department",
-        price: "$19.99",
-        salePrice: "$9.99",
-        image: "https://images.unsplash.com/photo-1449339854873-750e6913301b",
-        colors: ["blue", "black", "gray", "white"]
-      },
-      {
-        title: "Summer Shirt",
-        department: "Casual Collection",
-        price: "$24.99",
-        salePrice: "$12.99",
-        image: "https://images.unsplash.com/photo-1432139555190-58524dae6a55",
-        colors: ["yellow", "blue", "green", "pink"]
-      }
-    ];
-
-    return Array.from({ length: 36 }, (_, index) => ({
-      id: index + 1,
-      ...productTemplates[index % productTemplates.length],
-      title: `${productTemplates[index % productTemplates.length].title} ${Math.floor(index / 3) + 1}`
-    }));
-  };
-
-  const products = generateProducts();
+  const products = [
+    {
+      id: 1,
+      title: "Graphic Design Hoodie",
+      department: "English Department",
+      price: "$16.48",
+      salePrice: "$6.48",
+      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+      colors: ["blue", "green", "red", "brown"]
+    },
+    {
+      id: 2,
+      title: "Basic Tee",
+      department: "Fashion Department",
+      price: "$19.99",
+      salePrice: "$9.99",
+      image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27",
+      colors: ["blue", "black", "gray", "white"]
+    },
+    {
+      id: 3,
+      title: "Summer Shirt",
+      department: "Casual Collection",
+      price: "$24.99",
+      salePrice: "$12.99",
+      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
+      colors: ["yellow", "blue", "green", "pink"]
+    },
+    {
+      id: 4,
+      title: "Classic Hoodie",
+      department: "Winter Collection",
+      price: "$29.99",
+      salePrice: "$15.99",
+      image: "https://images.unsplash.com/photo-1556306535-0e29a537f0a3",
+      colors: ["black", "gray", "navy", "red"]
+    },
+    {
+      id: 5,
+      title: "Denim Jacket",
+      department: "Street Style",
+      price: "$49.99",
+      salePrice: "$29.99",
+      image: "https://images.unsplash.com/photo-1551028719-00167b16eac5",
+      colors: ["blue", "black", "gray"]
+    },
+    {
+      id: 6,
+      title: "Sport Tee",
+      department: "Active Wear",
+      price: "$22.99",
+      salePrice: "$11.99",
+      image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa",
+      colors: ["white", "black", "red", "blue"]
+    },
+    {
+      id: 7,
+      title: "Casual Sweater",
+      department: "Autumn Collection",
+      price: "$34.99",
+      salePrice: "$19.99",
+      image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105",
+      colors: ["beige", "gray", "brown"]
+    },
+    {
+      id: 8,
+      title: "Urban Jacket",
+      department: "City Style",
+      price: "$59.99",
+      salePrice: "$39.99",
+      image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea",
+      colors: ["black", "olive", "navy"]
+    },
+    {
+      id: 9,
+      title: "Vintage Tee",
+      department: "Retro Collection",
+      price: "$21.99",
+      salePrice: "$14.99",
+      image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb",
+      colors: ["white", "gray", "black"]
+    },
+    {
+      id: 10,
+      title: "Premium Hoodie",
+      department: "Luxury Line",
+      price: "$79.99",
+      salePrice: "$49.99",
+      image: "https://images.unsplash.com/photo-1578587018452-892bacefd3f2",
+      colors: ["black", "white", "gold"]
+    },
+    {
+      id: 11,
+      title: "Sport Jacket",
+      department: "Athletic Wear",
+      price: "$44.99",
+      salePrice: "$29.99",
+      image: "https://images.unsplash.com/photo-1617952236317-0bd127407984",
+      colors: ["blue", "red", "black"]
+    },
+    {
+      id: 12,
+      title: "Casual Tee",
+      department: "Daily Basics",
+      price: "$18.99",
+      salePrice: "$9.99",
+      image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a",
+      colors: ["white", "gray", "navy", "red"]
+    }
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -101,7 +174,7 @@ const ShopPage = () => {
 
       {/* Ürünler Başlık ve Filtreler */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-12 mb-6">
-        <p className="text-sm text-gray-500 mb-4 md:mb-0">Showing all 36 results</p>
+        <p className="text-sm text-gray-500 mb-4 md:mb-0">Showing all 12 results</p>
         <div className="flex gap-4">
           <select className="border p-2 rounded">
             <option>Popularity</option>
