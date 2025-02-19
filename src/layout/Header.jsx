@@ -1,9 +1,21 @@
 import { Menu, Search, ShoppingCart, User } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { logoutUser } from '../store/actions/clientActions'
+import { toast } from 'react-toastify'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const user = useSelector(state => state.client.user)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    dispatch(logoutUser())
+    toast.success('Successfully logged out!')
+    navigate('/')
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-40">
@@ -28,11 +40,22 @@ const Header = () => {
           </div>
 
           {/* Icons - Sağ Kısım */}
-          <div className="flex-none flex items-center space-x-6">
-            <Link to="/signup" className="hidden md:flex items-center text-blue-500 hover:text-blue-600">
-              <User className="w-5 h-5 mr-2" />
-              <span>Login / Register</span>
-            </Link>
+          <div className="flex items-center space-x-4">
+            {user?.name ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm">{user.name}</span>
+                <button 
+                  onClick={handleLogout} 
+                  className="text-sm text-red-500"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link to="/auth" className="text-blue-500 hover:text-blue-600">
+                Login / Register
+              </Link>
+            )}
             <Search className="w-6 h-6 cursor-pointer" />
             <ShoppingCart className="w-6 h-6 cursor-pointer" />
             <button 
