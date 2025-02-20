@@ -5,12 +5,16 @@ import { useDispatch } from 'react-redux';
 import axiosInstance from '../api/axios';
 import { setUser, loginUser } from '../store/actions/clientActions';
 import { toast } from 'react-toastify';
+import { Eye, EyeOff } from 'lucide-react';
 
 const AuthPage = () => {
   const [activeTab, setActiveTab] = useState('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [roles, setRoles] = useState([]);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showSignupConfirmPassword, setShowSignupConfirmPassword] = useState(false);
   
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -148,13 +152,22 @@ const AuthPage = () => {
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
             </div>
 
-            <div>
+            <div className="relative">
               <label className="block text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                {...register("password", { required: "Password is required" })}
-                className="w-full p-2 border rounded"
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  {...register("password", { required: "Password is required" })}
+                  className="w-full p-2 border rounded pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+                >
+                  {showLoginPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
             </div>
 
@@ -211,21 +224,56 @@ const AuthPage = () => {
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
             </div>
 
-            {/* Password Input */}
-            <div>
+            <div className="relative">
               <label className="block text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                {...register("password", { 
-                  required: "Password is required",
-                  pattern: {
-                    value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/,
-                    message: "Password must contain at least 8 characters, including numbers, lowercase, uppercase and special chars"
-                  }
-                })}
-                className="w-full p-2 border rounded"
-              />
+              <div className="relative">
+                <input
+                  type={showSignupPassword ? "text" : "password"}
+                  {...register("password", { 
+                    required: "Password is required",
+                    validate: {
+                      hasLength: (value) => value.length >= 8 || "Password must be at least 8 characters",
+                      hasNumber: (value) => /\d/.test(value) || "Password must contain at least one number",
+                      hasUpperCase: (value) => /[A-Z]/.test(value) || "Password must contain at least one uppercase letter",
+                      hasLowerCase: (value) => /[a-z]/.test(value) || "Password must contain at least one lowercase letter",
+                      hasSpecialChar: (value) => 
+                        /[!@#$%^&*.,;:'"(){}[\]<>?/\\|_+-=]/.test(value) || 
+                        "Password must contain at least one special character"
+                    }
+                  })}
+                  className="w-full p-2 border rounded pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSignupPassword(!showSignupPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+                >
+                  {showSignupPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+            </div>
+
+            {/* Password Confirmation */}
+            <div className="relative">
+              <label className="block text-gray-700 mb-2">Confirm Password</label>
+              <div className="relative">
+                <input
+                  type={showSignupConfirmPassword ? "text" : "password"}
+                  {...register("passwordConfirm", { 
+                    validate: value => value === watch('password') || "Passwords do not match"
+                  })}
+                  className="w-full p-2 border rounded pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSignupConfirmPassword(!showSignupConfirmPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+                >
+                  {showSignupConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {errors.passwordConfirm && <p className="text-red-500 text-sm mt-1">{errors.passwordConfirm.message}</p>}
             </div>
 
             {/* Role Selection */}
