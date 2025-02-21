@@ -6,7 +6,7 @@ const ShopPage = () => {
     {
       id: 1,
       title: "CLOTHS",
-      itemCount: "5 items",
+      itemCount: "4 items",
       image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35"
     },
     {
