@@ -26,18 +26,16 @@ const MemoizedProductList = memo(ProductList);
 
 const SORT_OPTIONS = [
   { value: '', label: 'Varsayılan Sıralama' },
-  { value: 'price_asc', label: 'Fiyat (Düşükten Yükseğe)' },
-  { value: 'price_desc', label: 'Fiyat (Yüksekten Düşüğe)' },
-  { value: 'name_asc', label: 'İsim (A-Z)' },
-  { value: 'name_desc', label: 'İsim (Z-A)' },
-  { value: 'rating_desc', label: 'Puan (Yüksekten Düşüğe)' },
-  { value: 'rating_asc', label: 'Puan (Düşükten Yükseğe)' }
+  { value: 'price:asc', label: 'Fiyat (Düşükten Yükseğe)' },
+  { value: 'price:desc', label: 'Fiyat (Yüksekten Düşüğe)' },
+  { value: 'rating:asc', label: 'Puan (Düşükten Yükseğe)' },
+  { value: 'rating:desc', label: 'Puan (Yüksekten Düşüğe)' }
 ];
 
 const sortProducts = (products, sortOption) => {
   if (!sortOption) return products;
 
-  const [field, direction] = sortOption.split('_');
+  const [field, direction] = sortOption.split(':');
   
   return [...products].sort((a, b) => {
     let comparison = 0;
@@ -45,9 +43,6 @@ const sortProducts = (products, sortOption) => {
     switch (field) {
       case 'price':
         comparison = a.price - b.price;
-        break;
-      case 'name':
-        comparison = a.name.localeCompare(b.name);
         break;
       case 'rating':
         comparison = a.rating - b.rating;
@@ -64,6 +59,8 @@ const ShopPage = () => {
   const dispatch = useDispatch();
   const { gender, categoryName, categoryId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // URL'den başlangıç değerlerini al
   const [searchTerm, setSearchTerm] = useState(searchParams.get('filter') || '');
   const [sortOption, setSortOption] = useState(searchParams.get('sort') || '');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -72,11 +69,32 @@ const ShopPage = () => {
   const total = useSelector(state => state.product.total);
   const fetchState = useSelector(state => state.product.fetchState);
 
+  // URL'i güncelle
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    
+    // Mevcut parametreleri koru
+    if (debouncedSearchTerm) {
+      params.set('filter', debouncedSearchTerm);
+    } else {
+      params.delete('filter');
+    }
+    
+    if (sortOption) {
+      params.set('sort', sortOption);
+    } else {
+      params.delete('sort');
+    }
+
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearchTerm, sortOption]);
+
   // Ürünleri getir
   useEffect(() => {
     const getProducts = async () => {
       const params = {};
       
+      // Tüm parametreleri ekle
       if (categoryId) {
         params.category = categoryId;
       }
@@ -86,9 +104,7 @@ const ShopPage = () => {
       }
 
       if (sortOption) {
-        const [field, direction] = sortOption.split('_');
-        params.sortBy = field;
-        params.sortDir = direction;
+        params.sort = sortOption;
       }
       
       await dispatch(fetchProducts(params));
@@ -96,21 +112,6 @@ const ShopPage = () => {
 
     getProducts();
   }, [dispatch, categoryId, debouncedSearchTerm, sortOption]);
-
-  // URL'i güncelle
-  useEffect(() => {
-    const params = {};
-    
-    if (debouncedSearchTerm) {
-      params.filter = debouncedSearchTerm;
-    }
-    
-    if (sortOption) {
-      params.sort = sortOption;
-    }
-
-    setSearchParams(params, { replace: true });
-  }, [debouncedSearchTerm, sortOption, setSearchParams]);
 
   // Sıralanmış ürünleri hesapla
   const sortedProducts = sortProducts(products, sortOption);
