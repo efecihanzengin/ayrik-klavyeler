@@ -1,6 +1,12 @@
+import axiosInstance from '../../api/axios';
+
+// Action Types
+export const SET_CATEGORIES = 'SET_CATEGORIES';
+export const SET_FETCH_STATE = 'SET_FETCH_STATE';
+
 // Action Creators
 export const setCategories = (categories) => ({
-  type: 'SET_CATEGORIES',
+  type: SET_CATEGORIES,
   payload: categories
 });
 
@@ -15,7 +21,7 @@ export const setTotal = (total) => ({
 });
 
 export const setFetchState = (state) => ({
-  type: 'SET_FETCH_STATE',
+  type: SET_FETCH_STATE,
   payload: state
 });
 
@@ -42,5 +48,24 @@ export const fetchProducts = () => async (dispatch) => {
     dispatch(setFetchState('FETCHED'));
   } catch (error) {
     dispatch(setFetchState('FAILED'));
+  }
+};
+
+export const fetchCategories = () => async (dispatch) => {
+  dispatch(setFetchState('FETCHING'));
+  try {
+    console.log('Fetching categories...');
+    const response = await axiosInstance.get('/categories');
+    console.log('API Response:', response.data);
+    
+    dispatch(setCategories(response.data));
+    dispatch(setFetchState('FETCHED'));
+    return { success: true };
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    console.error('Error response:', error.response);
+    
+    dispatch(setFetchState('FAILED'));
+    return { success: false, error: error.message };
   }
 }; 

@@ -75,4 +75,41 @@ export const logoutUser = () => (dispatch) => {
   dispatch(setUser({}));
   
   return { success: true };
+};
+
+export const verifyToken = () => async (dispatch) => {
+  try {
+    // localStorage'dan token'ı al
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      return { success: false };
+    }
+
+    // Axios header'ına token'ı ekle
+    axiosInstance.defaults.headers.common['Authorization'] = token;
+
+    // Verify request'i yap
+    const response = await axiosInstance.get('/verify');
+    
+    // User bilgilerini store'a kaydet
+    dispatch(setUser({
+      name: response.data.name,
+      email: response.data.email,
+      role_id: response.data.role_id
+    }));
+
+    // Yeni token'ı kaydet
+    localStorage.setItem('token', response.data.token);
+    axiosInstance.defaults.headers.common['Authorization'] = response.data.token;
+
+    return { success: true };
+  } catch (error) {
+    // Token geçersizse temizle
+    localStorage.removeItem('token');
+    delete axiosInstance.defaults.headers.common['Authorization'];
+    dispatch(setUser({}));
+    
+    return { success: false, error: error.response?.data?.message };
+  }
 }; 

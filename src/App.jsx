@@ -9,10 +9,35 @@ import BlogPage from './pages/BlogPage'
 import LegalPage from './pages/LegalPage'
 import SignUpPage from './pages/SignUpPage'
 import AuthPage from './pages/AuthPage'
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { verifyToken } from './store/actions/clientActions';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const autoLogin = async () => {
+      // localStorage'da token var mı kontrol et
+      const token = localStorage.getItem('token');
+      
+      if (token) {
+        const result = await dispatch(verifyToken());
+        
+        if (result.success) {
+          toast.success('Automatically logged in!');
+        } else {
+          // Token geçersizse sessizce temizle
+          localStorage.removeItem('token');
+        }
+      }
+    };
+
+    autoLogin();
+  }, [dispatch]);
+
   return (
     <Router>
       <PageContent>
@@ -26,20 +51,10 @@ function App() {
           <Route path="/legal" element={<LegalPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/shop/:gender/:category/:id" element={<ShopPage />} />
         </Routes>
       </PageContent>
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+      <ToastContainer />
     </Router>
   )
 }

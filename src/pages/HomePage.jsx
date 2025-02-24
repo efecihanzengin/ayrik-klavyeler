@@ -2,8 +2,24 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ProductCard from '../components/ProductCard';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { fetchCategories } from '../store/actions/productActions';
 
 const HomePage = () => {
+  const dispatch = useDispatch();
+  const categories = useSelector(state => state.product.categories);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  // En yüksek rating'e sahip 5 kategoriyi al
+  const topCategories = [...categories]
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
+
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -34,30 +50,6 @@ const HomePage = () => {
     }
   ];
 
-  const categories = [
-    {
-      id: 1,
-      title: "Unique Life",
-      subtitle: "Your Space",
-      image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35",
-      link: "#"
-    },
-    {
-      id: 2,
-      title: "Elements Style",
-      subtitle: "Ends Today",
-      image: "https://images.unsplash.com/photo-1449339854873-750e6913301b",
-      link: "#"
-    },
-    {
-      id: 3,
-      title: "Elements Style",
-      subtitle: "Ends Today",
-      image: "https://images.unsplash.com/photo-1432139555190-58524dae6a55",
-      link: "#"
-    }
-  ];
-
   return (
     <div className="flex flex-col">
       <div className="slider-container relative">
@@ -84,31 +76,55 @@ const HomePage = () => {
         </Slider>
       </div>
 
-      {/* Product Categories */}
+      {/* Top Categories Section */}
       <div className="container mx-auto px-4 py-12">
+        <h2 className="text-3xl font-bold text-center mb-8">Top Categories</h2>
+        
         {/* Mobile görünüm için */}
-        <div className="flex flex-col gap-12 md:hidden">
-          {categories.map((category) => (
-            <ProductCard 
+        <div className="flex flex-col gap-6 md:hidden">
+          {topCategories.map((category) => (
+            <Link 
               key={category.id}
-              title={category.title}
-              subtitle={category.subtitle}
-              image={category.image}
-              link={category.link}
-            />
+              to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.code.split(':')[1]}/${category.id}`}
+              className="relative h-64 group overflow-hidden rounded-lg shadow-md"
+            >
+              <img 
+                src={category.img}
+                alt={category.title}
+                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center text-white">
+                <h3 className="text-2xl font-bold">{category.title}</h3>
+                <div className="flex items-center mt-2">
+                  <span className="text-yellow-400">★</span>
+                  <span className="ml-1">{category.rating.toFixed(1)}</span>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
         
         {/* Desktop görünüm için */}
-        <div className="hidden md:grid md:grid-cols-3 md:gap-12">
-          {categories.map((category) => (
-            <ProductCard 
+        <div className="hidden md:grid md:grid-cols-5 md:gap-6">
+          {topCategories.map((category) => (
+            <Link 
               key={category.id}
-              title={category.title}
-              subtitle={category.subtitle}
-              image={category.image}
-              link={category.link}
-            />
+              to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.code.split(':')[1]}/${category.id}`}
+              className="relative h-64 group overflow-hidden rounded-lg shadow-md"
+            >
+              <img 
+                src={category.img}
+                alt={category.title}
+                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center text-white">
+                <h3 className="text-2xl font-bold">{category.title}</h3>
+                <div className="flex items-center mt-2">
+                  <span className="text-yellow-400">★</span>
+                  <span className="ml-1">{category.rating.toFixed(1)}</span>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
       </div>

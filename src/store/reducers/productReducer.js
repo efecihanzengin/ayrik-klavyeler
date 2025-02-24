@@ -1,3 +1,5 @@
+import { SET_CATEGORIES, SET_FETCH_STATE } from '../actions/productActions';
+
 const initialState = {
   categories: [],
   productList: [],
@@ -5,12 +7,12 @@ const initialState = {
   limit: 25,
   offset: 0,
   filter: '',
-  fetchState: 'NOT_FETCHED' // "NOT_FETCHED" , "FETCHING", "FETCHED", "FAILED"
+  fetchState: 'IDLE', // 'IDLE' | 'FETCHING' | 'FETCHED' | 'FAILED'
 };
 
 const productReducer = (state = initialState, action) => {
   switch (action.type) {
-    case 'SET_CATEGORIES':
+    case SET_CATEGORIES:
       return {
         ...state,
         categories: action.payload
@@ -25,7 +27,7 @@ const productReducer = (state = initialState, action) => {
         ...state,
         total: action.payload
       };
-    case 'SET_FETCH_STATE':
+    case SET_FETCH_STATE:
       return {
         ...state,
         fetchState: action.payload
