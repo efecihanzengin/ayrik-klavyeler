@@ -3,6 +3,8 @@ import axiosInstance from '../../api/axios';
 // Action Types
 export const SET_CATEGORIES = 'SET_CATEGORIES';
 export const SET_FETCH_STATE = 'SET_FETCH_STATE';
+export const SET_PRODUCTS = 'SET_PRODUCTS';
+export const SET_TOTAL = 'SET_TOTAL';
 
 // Action Creators
 export const setCategories = (categories) => ({
@@ -16,7 +18,7 @@ export const setProductList = (products) => ({
 });
 
 export const setTotal = (total) => ({
-  type: 'SET_TOTAL',
+  type: SET_TOTAL,
   payload: total
 });
 
@@ -40,14 +42,33 @@ export const setFilter = (filter) => ({
   payload: filter
 });
 
-// Thunk action creator örneği (ileride kullanılabilir)
-export const fetchProducts = () => async (dispatch) => {
-  dispatch(setFetchState('FETCHING'));
+export const setProducts = (products) => ({
+  type: SET_PRODUCTS,
+  payload: products
+});
+
+// Thunk action
+export const fetchProducts = (params = {}) => async (dispatch) => {
   try {
-    // API call gelecek
+    dispatch(setFetchState('FETCHING'));
+    
+    // URL parametrelerini oluştur
+    const queryString = Object.entries(params)
+      .filter(([_, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
+
+    const response = await axiosInstance.get(`/products${queryString ? `?${queryString}` : ''}`);
+    
+    dispatch(setProducts(response.data.products));
+    dispatch(setTotal(response.data.total));
     dispatch(setFetchState('FETCHED'));
+    
+    return { success: true };
   } catch (error) {
+    console.error('Error fetching products:', error);
     dispatch(setFetchState('FAILED'));
+    return { success: false, error: error.message };
   }
 };
 

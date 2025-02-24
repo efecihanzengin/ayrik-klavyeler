@@ -1,4 +1,4 @@
-import { SET_CATEGORIES, SET_FETCH_STATE } from '../actions/productActions';
+import { SET_CATEGORIES, SET_FETCH_STATE, SET_PRODUCTS, SET_TOTAL } from '../actions/productActions';
 
 const initialState = {
   categories: [],
@@ -17,12 +17,12 @@ const productReducer = (state = initialState, action) => {
         ...state,
         categories: action.payload
       };
-    case 'SET_PRODUCT_LIST':
+    case SET_PRODUCTS:
       return {
         ...state,
         productList: action.payload
       };
-    case 'SET_TOTAL':
+    case SET_TOTAL:
       return {
         ...state,
         total: action.payload

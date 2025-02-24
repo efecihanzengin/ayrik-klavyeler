@@ -14,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { verifyToken } from './store/actions/clientActions';
+import Layout from './layout/Layout';
 
 function App() {
   const dispatch = useDispatch();
@@ -40,10 +41,11 @@ function App() {
 
   return (
     <Router>
-      <PageContent>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/shop/:gender/:categoryName/:categoryId" element={<ShopPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -51,9 +53,8 @@ function App() {
           <Route path="/legal" element={<LegalPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/shop/:gender/:category/:id" element={<ShopPage />} />
-        </Routes>
-      </PageContent>
+        </Route>
+      </Routes>
       <ToastContainer />
     </Router>
   )

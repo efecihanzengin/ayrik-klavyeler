@@ -8,41 +8,18 @@ import { fetchCategories } from '../store/actions/productActions'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isShopMenuOpen, setIsShopMenuOpen] = useState(false)
   const user = useSelector(state => state.client.user)
   const categories = useSelector(state => state.product.categories)
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   useEffect(() => {
-    const getCategories = async () => {
-      const result = await dispatch(fetchCategories());
-      console.log('Fetch result:', result);
-    };
-    
-    getCategories();
-  }, [dispatch]);
+    dispatch(fetchCategories())
+  }, [dispatch])
 
-  // Debug için log ekleyelim
-  console.log('Categories in Header:', categories)
-
-  // Kategorileri cinsiyete göre grupla ve her gruptan 5 tane al
-  const groupedCategories = categories.reduce((acc, category) => {
-    const gender = category.gender === 'k' ? 'Kadın' : 'Erkek';
-    if (!acc[gender]) {
-      acc[gender] = [];
-    }
-    acc[gender].push(category);
-    return acc;
-  }, {});
-
-  // Her cinsiyet için en çok 5 kategori al
-  Object.keys(groupedCategories).forEach(gender => {
-    groupedCategories[gender] = groupedCategories[gender].slice(0, 5);
-  });
-
-  // Debug için grouped categories'i de kontrol edelim
-  console.log('Grouped Categories:', groupedCategories)
+  // Kategorileri cinsiyete göre ayır
+  const womenCategories = categories.filter(cat => cat.gender === 'k')
+  const menCategories = categories.filter(cat => cat.gender === 'e')
 
   const handleLogout = () => {
     dispatch(logoutUser())
@@ -52,111 +29,126 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-40">
-      {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center h-16 justify-between md:justify-start">
-          {/* Logo - Sol Kısım */}
-          <div className="flex-none">
-            <Link to="/" className="text-xl font-bold">Ayrik Klavyeler</Link>
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link to="/" className="text-xl font-bold">
+              Ayrik Klavyeler
+            </Link>
           </div>
-          
-          {/* Navigation - Orta Kısım */}
-          <div className="hidden md:flex flex-1 justify-center">
-            <nav className="space-x-12">
-              <Link to="/" className="text-gray-600 hover:text-gray-900">Home</Link>
-              
-              {/* Shop Dropdown */}
-              <div className="relative inline-block text-left">
-                <button
-                  className="flex items-center text-gray-600 hover:text-gray-900"
-                  onClick={() => setIsShopMenuOpen(!isShopMenuOpen)}
-                  onMouseEnter={() => setIsShopMenuOpen(true)}
-                >
-                  Shop
-                  <ChevronDown className="ml-1 w-4 h-4" />
-                </button>
 
-                {isShopMenuOpen && (
-                  <div 
-                    className="absolute left-0 mt-2 w-96 bg-white border shadow-lg rounded-md z-50"
-                    onMouseLeave={() => setIsShopMenuOpen(false)}
-                  >
-                    <div className="grid grid-cols-2 gap-8 p-6">
-                      {Object.entries(groupedCategories).map(([gender, cats]) => (
-                        <div key={gender} className="bg-white">
-                          <h3 className="font-semibold text-gray-900 mb-4">{gender}</h3>
-                          <ul className="space-y-2">
-                            {cats.map(cat => (
-                              <li key={cat.id}>
-                                <Link 
-                                  to={`/shop/${gender.toLowerCase()}/${cat.code.split(':')[1]}/${cat.id}`}
-                                  className="text-gray-600 hover:text-gray-900 block py-1"
-                                >
-                                  {cat.title}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
+          {/* Navigation */}
+          <nav className="hidden md:flex space-x-8">
+            <Link to="/" className="text-gray-600 hover:text-gray-900">
+              Home
+            </Link>
+
+            {/* Shop Dropdown - Güncellenen kısım */}
+            <div className="relative group">
+              <button className="flex items-center text-gray-600 group-hover:text-gray-900">
+                Shop
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </button>
+
+              {/* Invisible bridge to prevent mouse gap */}
+              <div className="absolute h-4 w-full -bottom-4"></div>
+
+              <div className="absolute hidden group-hover:block w-[400px] bg-white shadow-lg rounded-md top-full pt-4">
+                <Link to="/shop" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 mb-2">
+                  Tüm Ürünler
+                </Link>
+                
+                <div className="grid grid-cols-2 gap-4 p-4">
+                  {/* Kadın Kategorileri */}
+                  <div>
+                    <div className="font-medium text-gray-900 mb-2">Kadın</div>
+                    {womenCategories.map(category => (
+                      <Link
+                        key={category.id}
+                        to={`/shop/kadin/${category.code.split(':')[1]}/${category.id}`}
+                        className="block py-1 text-gray-600 hover:text-gray-900"
+                      >
+                        {category.title}
+                      </Link>
+                    ))}
                   </div>
-                )}
+
+                  {/* Erkek Kategorileri */}
+                  <div>
+                    <div className="font-medium text-gray-900 mb-2">Erkek</div>
+                    {menCategories.map(category => (
+                      <Link
+                        key={category.id}
+                        to={`/shop/erkek/${category.code.split(':')[1]}/${category.id}`}
+                        className="block py-1 text-gray-600 hover:text-gray-900"
+                      >
+                        {category.title}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <Link to="/about" className="text-gray-600 hover:text-gray-900">About</Link>
-              <Link to="/blog" className="text-gray-600 hover:text-gray-900">Blog</Link>
-              <Link to="/contact" className="text-gray-600 hover:text-gray-900">Contact</Link>
-              <Link to="/pages" className="text-gray-600 hover:text-gray-900">Pages</Link>
-            </nav>
-          </div>
+            <Link to="/about" className="text-gray-600 hover:text-gray-900">
+              About
+            </Link>
+            <Link to="/blog" className="text-gray-600 hover:text-gray-900">
+              Blog
+            </Link>
+            <Link to="/contact" className="text-gray-600 hover:text-gray-900">
+              Contact
+            </Link>
+            <Link to="/pages" className="text-gray-600 hover:text-gray-900">
+              Pages
+            </Link>
+          </nav>
 
-          {/* Icons - Sağ Kısım */}
+          {/* Right Icons */}
           <div className="flex items-center space-x-4">
-            {user?.name ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm">{user.name}</span>
-                <button 
-                  onClick={handleLogout} 
-                  className="text-sm text-red-500"
-                >
-                  Logout
+            <button className="text-gray-600 hover:text-gray-900">
+              <Search className="w-6 h-6" />
+            </button>
+            <Link to="/cart" className="text-gray-600 hover:text-gray-900">
+              <ShoppingCart className="w-6 h-6" />
+            </Link>
+            {user ? (
+              <div className="relative group">
+                <button className="flex items-center text-gray-600 hover:text-gray-900">
+                  <User className="w-6 h-6" />
+                  <ChevronDown className="w-4 h-4 ml-1" />
                 </button>
+                <div className="absolute right-0 hidden group-hover:block w-48 bg-white shadow-lg rounded-md mt-2">
+                  <div className="px-4 py-2 text-sm text-gray-700">
+                    {user.email}
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
             ) : (
-              <Link to="/auth" className="text-blue-500 hover:text-blue-600">
-                Login / Register
+              <Link to="/auth" className="text-gray-600 hover:text-gray-900">
+                <User className="w-6 h-6" />
               </Link>
             )}
-            <Search className="w-6 h-6 cursor-pointer" />
-            <ShoppingCart className="w-6 h-6 cursor-pointer" />
-            <button 
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="focus:outline-none md:hidden"
+              className="text-gray-600 hover:text-gray-900"
             >
               <Menu className="w-6 h-6" />
             </button>
           </div>
         </div>
       </div>
-
-      {/* Mobile Dropdown Menu */}
-      {isMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-white shadow-md md:hidden">
-          <nav className="max-w-7xl mx-auto py-8">
-            <div className="flex flex-col items-center space-y-6 text-gray-600">
-              <Link to="/" className="text-lg hover:text-gray-900">Home</Link>
-              <Link to="/shop" className="text-lg hover:text-gray-900">Shop</Link>
-              <Link to="/about" className="text-lg hover:text-gray-900">About</Link>
-              <Link to="/blog" className="text-lg hover:text-gray-900">Blog</Link>
-              <Link to="/contact" className="text-lg hover:text-gray-900">Contact</Link>
-              <Link to="/pages" className="text-lg hover:text-gray-900">Pages</Link>
-              <Link to="/signup" className="text-blue-500 hover:text-blue-600">Login / Register</Link>
-              <Search className="w-6 h-6 cursor-pointer" />
-            </div>
-          </nav>
-        </div>
-      )}
     </header>
   )
 }
