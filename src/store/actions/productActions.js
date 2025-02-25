@@ -53,12 +53,20 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
     dispatch(setFetchState('FETCHING'));
     
     // URL parametrelerini oluştur
-    const queryString = Object.entries(params)
-      .filter(([_, value]) => value !== undefined && value !== null)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('&');
+    const queryParams = new URLSearchParams();
+    
+    // Varsayılan değerler
+    queryParams.set('limit', params.limit || 25);
+    queryParams.set('offset', params.offset || 0);
+    
+    // Diğer parametreleri ekle
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && !['limit', 'offset'].includes(key)) {
+        queryParams.set(key, value);
+      }
+    });
 
-    const response = await axiosInstance.get(`/products${queryString ? `?${queryString}` : ''}`);
+    const response = await axiosInstance.get(`/products?${queryParams.toString()}`);
     
     dispatch(setProducts(response.data.products));
     dispatch(setTotal(response.data.total));
