@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductDetail, clearProductDetail } from '../store/actions/productActions';
 import { Loader, ArrowLeft } from 'lucide-react';
+import { addToCart } from '../store/actions/cartActions';
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -20,6 +21,10 @@ const ProductDetail = () => {
       dispatch(clearProductDetail());
     };
   }, [dispatch, productId]);
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(product));
+  };
 
   if (fetchState === 'FETCHING') {
     return (
@@ -92,6 +97,7 @@ const ProductDetail = () => {
 
           <button
             disabled={product.stock === 0}
+            onClick={handleAddToCart}
             className={`w-full py-3 px-8 rounded-lg text-white font-medium ${
               product.stock > 0 
                 ? 'bg-blue-600 hover:bg-blue-700' 

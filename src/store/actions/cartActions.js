@@ -14,34 +14,21 @@ export const setAddress = (address) => ({
 });
 
 // Cart işlemleri için yardımcı fonksiyonlar
-export const addToCart = (product) => (dispatch, getState) => {
-  const { cart } = getState().cart;
-  const existingItem = cart.find(item => item.product.id === product.id);
+export const addToCart = (product) => ({
+  type: 'ADD_TO_CART',
+  payload: product
+});
 
-  if (existingItem) {
-    const updatedCart = cart.map(item =>
-      item.product.id === product.id
-        ? { ...item, count: item.count + 1 }
-        : item
-    );
-    dispatch(setCart(updatedCart));
-  } else {
-    dispatch(setCart([...cart, { count: 1, product }]));
-  }
-};
+export const removeFromCart = (productId) => ({
+  type: 'REMOVE_FROM_CART',
+  payload: productId
+});
 
-export const removeFromCart = (productId) => (dispatch, getState) => {
-  const { cart } = getState().cart;
-  const updatedCart = cart.filter(item => item.product.id !== productId);
-  dispatch(setCart(updatedCart));
-};
+export const updateCartItem = (productId, updates) => ({
+  type: 'UPDATE_CART_ITEM',
+  payload: { productId, updates }
+});
 
-export const updateCartItemCount = (productId, count) => (dispatch, getState) => {
-  const { cart } = getState().cart;
-  const updatedCart = cart.map(item =>
-    item.product.id === productId
-      ? { ...item, count: count }
-      : item
-  );
-  dispatch(setCart(updatedCart));
-}; 
+export const clearCart = () => ({
+  type: 'CLEAR_CART'
+}); 

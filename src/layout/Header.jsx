@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { logoutUser } from '../store/actions/clientActions'
 import { toast } from 'react-toastify'
 import { fetchCategories } from '../store/actions/productActions'
+import CartDropdown from '../components/CartDropdown'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -12,6 +13,10 @@ const Header = () => {
   const categories = useSelector(state => state.product.categories)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const cart = useSelector(state => state.cart.cart)
+  
+  const totalItems = cart.reduce((total, item) => total + item.count, 0)
 
   useEffect(() => {
     dispatch(fetchCategories())
@@ -110,9 +115,27 @@ const Header = () => {
             <button className="text-gray-600 hover:text-gray-900">
               <Search className="w-6 h-6" />
             </button>
-            <Link to="/cart" className="text-gray-600 hover:text-gray-900">
-              <ShoppingCart className="w-6 h-6" />
-            </Link>
+            
+            {/* Sepet butonu ve dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsCartOpen(!isCartOpen)}
+                className="text-gray-600 hover:text-gray-900 relative"
+              >
+                <ShoppingCart className="w-6 h-6" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+              
+              <CartDropdown
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+              />
+            </div>
+
             {user ? (
               <div className="relative group">
                 <button className="flex items-center text-gray-600 hover:text-gray-900">

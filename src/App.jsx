@@ -16,6 +16,7 @@ import { useDispatch } from 'react-redux';
 import { verifyToken } from './store/actions/clientActions';
 import Layout from './layout/Layout';
 import ProductDetail from './pages/ProductDetail';
+import CartPage from './pages/CartPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -55,6 +56,7 @@ function App() {
           <Route path="/legal" element={<LegalPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/cart" element={<CartPage />} />
         </Route>
       </Routes>
       <ToastContainer />
