@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { verifyToken } from './store/actions/clientActions';
 import Layout from './layout/Layout';
+import ProductDetail from './pages/ProductDetail';
 
 function App() {
   const dispatch = useDispatch();
@@ -46,6 +47,7 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/shop/:gender/:categoryName/:categoryId" element={<ShopPage />} />
+          <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" element={<ProductDetail />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />

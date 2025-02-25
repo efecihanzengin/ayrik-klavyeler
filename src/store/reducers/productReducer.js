@@ -8,6 +8,8 @@ const initialState = {
   offset: 0,
   filter: '',
   fetchState: 'IDLE', // 'IDLE' | 'FETCHING' | 'FETCHED' | 'FAILED'
+  selectedProduct: null, // Seçili ürün detayı için
+  productFetchState: 'IDLE', // Ürün detayı fetch durumu için
 };
 
 const productReducer = (state = initialState, action) => {
@@ -46,6 +48,16 @@ const productReducer = (state = initialState, action) => {
       return {
         ...state,
         filter: action.payload
+      };
+    case 'SET_SELECTED_PRODUCT':
+      return {
+        ...state,
+        selectedProduct: action.payload
+      };
+    case 'SET_PRODUCT_FETCH_STATE':
+      return {
+        ...state,
+        productFetchState: action.payload
       };
     default:
       return state;

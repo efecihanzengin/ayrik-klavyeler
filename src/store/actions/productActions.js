@@ -5,6 +5,8 @@ export const SET_CATEGORIES = 'SET_CATEGORIES';
 export const SET_FETCH_STATE = 'SET_FETCH_STATE';
 export const SET_PRODUCTS = 'SET_PRODUCTS';
 export const SET_TOTAL = 'SET_TOTAL';
+export const SET_SELECTED_PRODUCT = 'SET_SELECTED_PRODUCT';
+export const SET_PRODUCT_FETCH_STATE = 'SET_PRODUCT_FETCH_STATE';
 
 // Action Creators
 export const setCategories = (categories) => ({
@@ -45,6 +47,16 @@ export const setFilter = (filter) => ({
 export const setProducts = (products) => ({
   type: SET_PRODUCTS,
   payload: products
+});
+
+export const setSelectedProduct = (product) => ({
+  type: SET_SELECTED_PRODUCT,
+  payload: product
+});
+
+export const setProductFetchState = (state) => ({
+  type: SET_PRODUCT_FETCH_STATE,
+  payload: state
 });
 
 // Thunk action
@@ -97,4 +109,28 @@ export const fetchCategories = () => async (dispatch) => {
     dispatch(setFetchState('FAILED'));
     return { success: false, error: error.message };
   }
+};
+
+// Yeni thunk action - Ürün detayı getirme
+export const fetchProductDetail = (productId) => async (dispatch) => {
+  try {
+    dispatch(setProductFetchState('FETCHING'));
+    
+    const response = await axiosInstance.get(`/products/${productId}`);
+    
+    dispatch(setSelectedProduct(response.data));
+    dispatch(setProductFetchState('FETCHED'));
+    
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error('Error fetching product detail:', error);
+    dispatch(setProductFetchState('FAILED'));
+    return { success: false, error: error.message };
+  }
+};
+
+// Ürün detayını temizleme action'ı (sayfa değişimlerinde kullanılacak)
+export const clearProductDetail = () => (dispatch) => {
+  dispatch(setSelectedProduct(null));
+  dispatch(setProductFetchState('IDLE'));
 }; 
