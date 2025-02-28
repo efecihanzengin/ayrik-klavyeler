@@ -1,11 +1,12 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash2, ArrowLeft, ChevronRight } from 'lucide-react';
 import { removeFromCart, updateCartItem } from '../store/actions/cartActions';
 
 const CartPage = () => {
   const cart = useSelector(state => state.cart.cart);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Toplam hesaplamaları
   const subtotal = cart
@@ -195,6 +196,7 @@ const CartPage = () => {
               {/* Sepeti onayla butonu */}
               <button
                 disabled={!cart.some(item => item.checked) || subtotal === 0}
+                onClick={() => navigate('/order')}
                 className="w-full bg-orange-500 text-white py-4 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <span>Sepeti Onayla</span>

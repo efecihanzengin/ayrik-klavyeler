@@ -38,25 +38,38 @@ export const fetchRoles = () => async (dispatch, getState) => {
 
 export const loginUser = (credentials) => async (dispatch) => {
   try {
-    const response = await axiosInstance.post('/login', credentials);
+    const response = await axiosInstance.post('/login', {
+      email: credentials.email,
+      password: credentials.password
+    });
+    
+    const token = response.data.token;
+    
+    if (!token) {
+      throw new Error('No token received');
+    }
+
+    // Token'ı localStorage'a kaydet
+    localStorage.setItem('token', token);
+    
+    // Token'ı axios instance'ına default header olarak ekle
+    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     
     // User bilgilerini store'a kaydet
-    dispatch(setUser({
+    const userData = {
       name: response.data.name,
       email: response.data.email,
       role_id: response.data.role_id
-    }));
+    };
     
-    // Token'ı localStorage'a kaydet (eğer rememberMe true ise)
-    if (credentials.rememberMe) {
-      localStorage.setItem('token', response.data.token);
-    }
+    dispatch(setUser(userData));
     
-    // Token'ı axios instance'ına default header olarak ekle
-    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    // User bilgilerini de localStorage'a kaydet
+    localStorage.setItem('user', JSON.stringify(userData));
     
     return { success: true };
   } catch (error) {
+    console.error('Login error:', error);
     return {
       success: false,
       error: error.response?.data?.message || 'Login failed'
@@ -112,4 +125,20 @@ export const verifyToken = () => async (dispatch) => {
     
     return { success: false, error: error.response?.data?.message };
   }
+};
+
+// Yeni bir fonksiyon ekleyelim
+export const checkAuthStatus = () => async (dispatch) => {
+  const token = localStorage.getItem('token');
+  const userData = localStorage.getItem('user');
+
+  if (token && userData) {
+    // Token'ı axios instance'ına ekle
+    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    
+    // User bilgilerini store'a yükle
+    dispatch(setUser(JSON.parse(userData)));
+    return true;
+  }
+  return false;
 }; 

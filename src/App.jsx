@@ -13,32 +13,18 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { verifyToken } from './store/actions/clientActions';
+import { verifyToken, checkAuthStatus } from './store/actions/clientActions';
 import Layout from './layout/Layout';
 import ProductDetail from './pages/ProductDetail';
 import CartPage from './pages/CartPage';
+import OrderPage from './pages/OrderPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const autoLogin = async () => {
-      // localStorage'da token var mı kontrol et
-      const token = localStorage.getItem('token');
-      
-      if (token) {
-        const result = await dispatch(verifyToken());
-        
-        if (result.success) {
-          toast.success('Automatically logged in!');
-        } else {
-          // Token geçersizse sessizce temizle
-          localStorage.removeItem('token');
-        }
-      }
-    };
-
-    autoLogin();
+    dispatch(checkAuthStatus());
   }, [dispatch]);
 
   return (
@@ -57,6 +43,14 @@ function App() {
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route 
+            path="/order" 
+            element={
+              <ProtectedRoute>
+                <OrderPage />
+              </ProtectedRoute>
+            } 
+          />
         </Route>
       </Routes>
       <ToastContainer />
