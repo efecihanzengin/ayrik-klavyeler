@@ -1,3 +1,11 @@
+import { 
+  ADD_TO_CART, 
+  REMOVE_FROM_CART,
+  SET_CART_ITEM_COUNT,
+  TOGGLE_CART_ITEM_CHECK,
+  CLEAR_CART
+} from '../actions/cartActions';
+
 const initialState = {
   cart: [], // [{count: number, checked: boolean, product: object}]
   payment: {},

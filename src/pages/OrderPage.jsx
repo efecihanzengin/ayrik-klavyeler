@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { toast } from 'react-toastify';
 import AddressForm from '../components/AddressForm';
 import CardForm from '../components/CardForm';
 import { Edit, Trash2, Plus, Check, CreditCard } from 'lucide-react';
+import { clearCart } from "../store/actions/cartActions";
 
 const OrderPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [activeStep, setActiveStep] = useState(1); // 1: Adres, 2: Ödeme
   const [addresses, setAddresses] = useState([]);
   const [cards, setCards] = useState([]);
@@ -18,7 +20,8 @@ const OrderPage = () => {
   const [selectedInstallment, setSelectedInstallment] = useState('single');
   const [loading, setLoading] = useState({
     addresses: true,
-    cards: true
+    cards: true,
+    checkout: false
   });
   const [error, setError] = useState({
     addresses: null,
@@ -29,9 +32,10 @@ const OrderPage = () => {
   const [editingAddress, setEditingAddress] = useState(null);
   const [editingCard, setEditingCard] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
   
-  const user = useSelector(state => state.client.user);
   const cart = useSelector(state => state.cart.cart);
+  const user = useSelector(state => state.client.user);
 
   useEffect(() => {
     fetchAddresses();
@@ -43,14 +47,7 @@ const OrderPage = () => {
       setLoading(prev => ({ ...prev, addresses: true }));
       setError(prev => ({ ...prev, addresses: null }));
       
-      const token = localStorage.getItem('token');
-      console.log('Kullanılan token:', token);
-      
-      const response = await axiosInstance.get('/user/address', {
-        headers: {
-          Authorization: token
-        }
-      });
+      const response = await axiosInstance.get('/user/address');
       
       console.log('Adresler başarıyla alındı:', response.data);
       setAddresses(response.data);
@@ -76,13 +73,7 @@ const OrderPage = () => {
       setLoading(prev => ({ ...prev, cards: true }));
       setError(prev => ({ ...prev, cards: null }));
       
-      const token = localStorage.getItem('token');
-      
-      const response = await axiosInstance.get('/user/card', {
-        headers: {
-          Authorization: token
-        }
-      });
+      const response = await axiosInstance.get('/user/card');
       
       console.log('Kartlar başarıyla alındı:', response.data);
       setCards(response.data);
@@ -167,6 +158,30 @@ const OrderPage = () => {
     setActiveStep(1);
   };
 
+  const formatCartProducts = () => {
+    return cart
+      .filter(item => item.checked)
+      .map(item => {
+        let detail = "";
+        if (item.product.color) {
+          detail += item.product.color;
+        }
+        if (item.product.size) {
+          detail += detail ? ` - ${item.product.size}` : item.product.size;
+        }
+        
+        if (!detail) {
+          detail = "standart";
+        }
+        
+        return {
+          product_id: item.product.id,
+          count: item.count,
+          detail: detail
+        };
+      });
+  };
+
   const handleCheckout = async () => {
     if (!selectedAddress) {
       toast.error('Lütfen bir teslimat adresi seçin');
@@ -186,22 +201,56 @@ const OrderPage = () => {
     try {
       setLoading(prev => ({ ...prev, checkout: true }));
       
-      // Burada sipariş oluşturma API isteği yapılacak
-      // Bu örnek projede sadece başarılı olduğunu varsayıyoruz
+      const selectedCardData = cards.find(card => card.id === selectedCard);
+      if (!selectedCardData && selectedPaymentMethod === 'card') {
+        toast.error('Kart bilgisi bulunamadı');
+        return;
+      }
+      
+      const { total } = calculateTotals();
+      
+      const orderData = {
+        address_id: selectedAddress,
+        order_date: new Date().toISOString(),
+        card_no: selectedCardData?.card_no.replace(/\s/g, '') || "0000000000000000",
+        card_name: selectedCardData?.name_on_card || "Cash Payment",
+        card_expire_month: selectedCardData?.expire_month || 1,
+        card_expire_year: selectedCardData?.expire_year || 2030,
+        card_ccv: 123,
+        price: Number(total.toFixed(2)),
+        products: formatCartProducts()
+      };
+      
+      console.log("Sipariş verileri:", orderData);
+      
+      if (orderData.products.length === 0) {
+        toast.error('Sepetinizde ürün bulunmamaktadır');
+        setLoading(prev => ({ ...prev, checkout: false }));
+        return;
+      }
+      
+      const response = await axiosInstance.post('/order', orderData);
+      
+      console.log('Sipariş başarıyla oluşturuldu:', response.data);
+      
+      setOrderSuccess(true);
+      
+      dispatch(clearCart());
       
       toast.success('Siparişiniz başarıyla oluşturuldu!');
       
-      // Sepeti temizle ve anasayfaya yönlendir
-      // Bu kısım projenize göre düzenlenebilir
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
+      }, 5000);
+      
     } catch (err) {
+      console.error('Sipariş hatası:', err);
       toast.error('Sipariş oluşturulurken bir hata oluştu');
     } finally {
       setLoading(prev => ({ ...prev, checkout: false }));
     }
   };
 
-  // Toplam hesaplamaları
   const calculateTotals = () => {
     const subtotal = cart
       .filter(item => item.checked)
@@ -217,19 +266,46 @@ const OrderPage = () => {
 
   const { subtotal, shippingCost, shippingDiscount, total } = calculateTotals();
 
-  // Kartın son 4 hanesini göster ve geri kalanı maskele
   const maskCardNumber = (cardNumber) => {
     if (!cardNumber) return '';
     const last4 = cardNumber.slice(-4);
     return `**** **** **** ${last4}`;
   };
 
+  if (orderSuccess) {
+    return (
+      <div className="container mx-auto px-4 py-8 mt-16 mb-16 min-h-screen">
+        <div className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-lg text-center">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check size={32} className="text-green-600" />
+          </div>
+          
+          <h1 className="text-2xl font-bold text-green-600 mb-4">Siparişiniz Başarıyla Oluşturuldu!</h1>
+          
+          <p className="text-gray-600 mb-8">
+            Siparişiniz için teşekkür ederiz. Sipariş takibinizi hesabım bölümünden yapabilirsiniz.
+          </p>
+          
+          <button
+            onClick={() => navigate('/')}
+            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
+          >
+            Alışverişe Devam Et
+          </button>
+          
+          <p className="text-sm text-gray-500 mt-6">
+            Birkaç saniye içinde otomatik olarak ana sayfaya yönlendirileceksiniz.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 mt-16 mb-16 min-h-screen">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Sipariş Oluştur</h1>
         
-        {/* Adım Göstergesi */}
         <div className="flex mb-8 border-b">
           <div 
             className={`pb-4 px-4 ${activeStep === 1 ? 'text-orange-500 border-b-2 border-orange-500 font-medium' : 'text-gray-500'}`}
@@ -244,7 +320,6 @@ const OrderPage = () => {
           </div>
         </div>
         
-        {/* STEP 1: Adresler */}
         {activeStep === 1 && (
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
@@ -356,12 +431,10 @@ const OrderPage = () => {
           </div>
         )}
         
-        {/* STEP 2: Ödeme */}
         {activeStep === 2 && (
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row gap-8">
               <div className="lg:w-2/3">
-                {/* Seçili Adres Bilgisi */}
                 <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-semibold">Adres Bilgileri</h3>
@@ -393,7 +466,6 @@ const OrderPage = () => {
                   )}
                 </div>
                 
-                {/* Ödeme Yöntemi Seçimi */}
                 <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
                   <h3 className="font-semibold mb-4">Ödeme Seçenekleri</h3>
                   
@@ -501,7 +573,6 @@ const OrderPage = () => {
                               <span>Başka bir kart ile ödeme yap</span>
                             </button>
                             
-                            {/* Taksit Seçenekleri */}
                             <div className="mt-6">
                               <h4 className="font-medium mb-3">Taksit Seçenekleri</h4>
                               
@@ -544,7 +615,6 @@ const OrderPage = () => {
                   </div>
                 </div>
                 
-                {/* Sözleşme ve Koşullar */}
                 <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
                   <div className="flex items-start gap-2">
                     <input 
@@ -563,7 +633,6 @@ const OrderPage = () => {
                 </div>
               </div>
               
-              {/* Sipariş Özeti */}
               <div className="lg:w-1/3">
                 <div className="bg-white border border-gray-200 rounded-lg p-6 sticky top-24">
                   <h2 className="text-xl font-semibold mb-6">Sipariş Özeti</h2>
@@ -596,10 +665,20 @@ const OrderPage = () => {
                   
                   <button 
                     onClick={handleCheckout}
-                    disabled={!selectedAddress || (selectedPaymentMethod === 'card' && !selectedCard && cards.length > 0) || !termsAccepted}
+                    disabled={
+                      !selectedAddress || 
+                      (selectedPaymentMethod === 'card' && !selectedCard && cards.length > 0) || 
+                      !termsAccepted ||
+                      loading.checkout
+                    }
                     className="w-full mt-6 bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
-                    Ödeme Yap
+                    {loading.checkout ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                        <span>İşleniyor...</span>
+                      </div>
+                    ) : "Ödeme Yap"}
                   </button>
                 </div>
               </div>
@@ -608,7 +687,6 @@ const OrderPage = () => {
         )}
       </div>
 
-      {/* Adres Form Modal */}
       {showAddressForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
           <AddressForm 
@@ -619,7 +697,6 @@ const OrderPage = () => {
         </div>
       )}
       
-      {/* Kart Form Modal */}
       {showCardForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
           <CardForm 
