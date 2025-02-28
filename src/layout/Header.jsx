@@ -1,4 +1,4 @@
-import { Menu, Search, ShoppingCart, User, ChevronDown } from 'lucide-react'
+import { Menu, Search, ShoppingCart, User, ChevronDown, Package } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
@@ -141,16 +141,32 @@ const Header = () => {
               />
             </div>
 
-            {/* Auth/User button - ESKİ HALİNE DÖNÜYORUZ */}
+            {/* Auth/User button - Bu kısmı güncelliyoruz */}
             {user && Object.keys(user).length > 0 ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm">{user.name || user.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-red-500"
-                >
-                  Logout
+              <div className="relative group">
+                <button className="flex items-center space-x-1 text-gray-600 group-hover:text-gray-900">
+                  <span className="text-sm">{user.name || user.email}</span>
+                  <ChevronDown className="w-4 h-4" />
                 </button>
+                
+                {/* Invisible bridge to prevent mouse gap */}
+                <div className="absolute h-4 w-full -bottom-4"></div>
+                
+                <div className="absolute hidden group-hover:block right-0 w-48 bg-white shadow-lg rounded-md top-full pt-2">
+                  <Link 
+                    to="/my-orders" 
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Package className="w-4 h-4 mr-2" />
+                    Siparişlerim
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                  >
+                    Çıkış Yap
+                  </button>
+                </div>
               </div>
             ) : (
               <Link to="/auth" className="text-blue-500 hover:text-blue-600">

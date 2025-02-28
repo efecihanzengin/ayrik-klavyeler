@@ -19,6 +19,7 @@ import ProductDetail from './pages/ProductDetail';
 import CartPage from './pages/CartPage';
 import OrderPage from './pages/OrderPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import PreviousOrdersPage from './pages/PreviousOrdersPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -48,6 +49,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <OrderPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/my-orders" 
+            element={
+              <ProtectedRoute>
+                <PreviousOrdersPage />
               </ProtectedRoute>
             } 
           />
