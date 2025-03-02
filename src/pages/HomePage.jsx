@@ -34,19 +34,27 @@ const HomePage = () => {
   const slides = [
     {
       id: 1,
-      title: "Fresh Groceries",
-      subtitle: "DELIVERY SERVICE",
-      description: "We deliver fresh groceries to your doorstep daily",
-      buttonText: "Start Now",
-      bgImage: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974&auto=format&fit=crop"
+      title: "Yeni Sezon Koleksiyonu",
+      subtitle: "2024 YAZ SEZONU",
+      description: "En trend parçalarla stilinizi yenileyin, özel indirimlerle şıklığı yakalayın",
+      buttonText: "Koleksiyonu Keşfet",
+      bgImage: "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=2071&auto=format&fit=crop"
     },
     {
       id: 2,
-      title: "Quality Products",
-      subtitle: "BEST PRICES",
-      description: "Find the best quality products at affordable prices",
-      buttonText: "Shop Now",
-      bgImage: "https://images.unsplash.com/photo-1543168256-418811576931?q=80&w=2070&auto=format&fit=crop"
+      title: "İndirim Fırsatları",
+      subtitle: "SEZON SONU",
+      description: "Seçili ürünlerde %50'ye varan indirimlerle gardırobunuzu yenileyin",
+      buttonText: "Alışverişe Başla",
+      bgImage: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2070&auto=format&fit=crop"
+    },
+    {
+      id: 3,
+      title: "Özel Tasarım Parçalar",
+      subtitle: "LİMİTLİ KOLEKSİYON",
+      description: "Benzersiz tasarımlarla tarzınızı yansıtın, sınırlı sayıda üretilen parçaları kaçırmayın",
+      buttonText: "Hemen İncele",
+      bgImage: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2070&auto=format&fit=crop"
     }
   ];
 
@@ -65,7 +73,7 @@ const HomePage = () => {
                     <h2 className="text-5xl md:text-7xl font-bold mb-4">{slide.title}</h2>
                     <p className="text-xl md:text-2xl mb-4">{slide.subtitle}</p>
                     <p className="text-lg mb-8 max-w-xl">{slide.description}</p>
-                    <button className="bg-blue-600 text-white px-8 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors w-fit">
+                    <button className="bg-orange-500 text-white px-8 py-3 rounded-md text-lg font-medium hover:bg-orange-600 transition-colors w-fit">
                       {slide.buttonText}
                     </button>
                   </div>
