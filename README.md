@@ -1,6 +1,3 @@
-<think>Kullanıcı, README dosyasını Markdown formatında istedi. Zaten Markdown formatında yazmıştım, fakat belki bazı şeyler doğru görünmüyor. Tekrar aynı içeriği eksiksiz olarak, saf Markdown formatında sunacağım.</think>Tabii ki, aşağıda içeriği Markdown formatında sunuyorum:
-
-```markdown
 # E-Ticaret Projesi - README
 
 ## Proje Hakkında
@@ -100,4 +97,3 @@ Gelecekte eklemek istediğim özellikler:
 ---
 
 Bu proje [Workintech](https://www.workintech.com.tr/) eğitim programı kapsamında geliştirilmiştir.
-```
