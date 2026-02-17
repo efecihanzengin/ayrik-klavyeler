@@ -1,263 +1,207 @@
-import { useState, useEffect } from "react";
-import axiosInstance from "../api/axios";
-import { toast } from "react-toastify";
-import { ChevronDown, ChevronUp, Package, ShoppingBag, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { ChevronDown, ChevronUp, Package, RefreshCw, ShoppingBag } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import axiosInstance from '../api/axios'
 
 const PreviousOrdersPage = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [expandedOrders, setExpandedOrders] = useState({});
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [expandedOrders, setExpandedOrders] = useState({})
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders()
+  }, [])
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await axiosInstance.get('/order');
-      console.log('Siparişler başarıyla alındı:', response.data);
-      
-      // Siparişleri tersten sıralayalım (en yeni en üstte)
-      const sortedOrders = response.data.sort((a, b) => {
-        return new Date(b.order_date) - new Date(a.order_date);
-      });
-      
-      setOrders(sortedOrders);
-    } catch (err) {
-      console.error('Siparişler yüklenirken hata:', err);
-      setError('Siparişleriniz yüklenirken bir hata oluştu. Lütfen tekrar deneyin.');
-      toast.error('Siparişler yüklenirken hata oluştu');
+      setLoading(true)
+      setError(null)
+
+      const response = await axiosInstance.get('/order')
+      const sortedOrders = response.data.sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+      setOrders(sortedOrders)
+    } catch {
+      setError('Siparisler yuklenemedi. Lutfen tekrar dene.')
+      toast.error('Siparisler yuklenemedi.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const toggleOrderExpand = (orderId) => {
-    setExpandedOrders(prev => ({
+    setExpandedOrders((prev) => ({
       ...prev,
-      [orderId]: !prev[orderId]
-    }));
-  };
+      [orderId]: !prev[orderId],
+    }))
+  }
 
-  // Tarih formatını düzenleyen yardımcı fonksiyon
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'long', 
+    return new Date(dateString).toLocaleDateString('tr-TR', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
-    };
-    return new Date(dateString).toLocaleDateString('tr-TR', options);
-  };
+      minute: '2-digit',
+    })
+  }
 
-  // Sipariş durumu rengini belirleyen yardımcı fonksiyon
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'processing':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const formatStatus = (status) => {
+    if (!status) return 'Hazirlaniyor'
+
+    const map = {
+      completed: 'Tamamlandi',
+      processing: 'Isleniyor',
+      pending: 'Beklemede',
+      cancelled: 'Iptal',
     }
-  };
+
+    return map[status] || status
+  }
+
+  const statusClassName = (status) => {
+    const map = {
+      completed: 'bg-[#e8f0ee] text-[#0f5c4a]',
+      processing: 'bg-[#edf3fb] text-[#24588a]',
+      pending: 'bg-[#f8f1df] text-[#8a5b14]',
+      cancelled: 'bg-[#f9e6e6] text-[#a12f2f]',
+    }
+
+    return map[status] || 'bg-[#ece8dc] text-ink'
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-16 mb-16 min-h-screen">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Siparişlerim</h1>
-        
+    <div className="page-enter">
+      <section className="page-shell space-y-6">
+        <div className="surface-card p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="section-subtitle">Orders</p>
+              <h1 className="mt-2 text-3xl font-bold text-ink sm:text-4xl">Siparislerim</h1>
+              <p className="mt-2 text-sm text-muted">Tum siparislerini tarih sirasina gore inceleyebilirsin.</p>
+            </div>
+
+            <button type="button" onClick={fetchOrders} className="btn-secondary">
+              <RefreshCw className="h-4 w-4" />
+              Yenile
+            </button>
+          </div>
+        </div>
+
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+          <div className="surface-card flex min-h-[280px] items-center justify-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-soft border-t-accent" />
           </div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <button 
-              onClick={fetchOrders}
-              className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600"
-            >
+          <div className="surface-card p-10 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#a12f2f]">Error</p>
+            <h2 className="mt-2 text-2xl font-bold text-ink">{error}</h2>
+            <button type="button" onClick={fetchOrders} className="btn-primary mt-5">
               Tekrar Dene
             </button>
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-10 text-center">
-            <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-gray-100 rounded-full">
-              <Package size={32} className="text-gray-500" />
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Henüz Siparişiniz Bulunmuyor</h2>
-            <p className="text-gray-600 mb-6">
-              Mağazamızdan henüz bir alışveriş yapmadınız. Hemen alışverişe başlayarak indirimli ürünleri keşfedin.
-            </p>
-            <a 
-              href="/shop" 
-              className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 inline-block"
-            >
-              Alışverişe Başla
-            </a>
+          <div className="surface-card p-12 text-center">
+            <Package className="mx-auto mb-3 h-10 w-10 text-muted" />
+            <h2 className="text-2xl font-bold text-ink">Henuz siparisin yok</h2>
+            <p className="mt-2 text-sm text-muted">Magazaya gidip ilk siparisini olusturabilirsin.</p>
+            <Link to="/shop" className="btn-primary mt-6 inline-flex">
+              Alisverise Basla
+            </Link>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {orders.map((order) => (
-              <div key={order.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                {/* Sipariş Özeti Başlığı */}
-                <div 
-                  className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
+              <article key={order.id} className="surface-card overflow-hidden">
+                <button
+                  type="button"
                   onClick={() => toggleOrderExpand(order.id)}
+                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-[#f7f4ec]"
                 >
-                  <div className="flex items-center">
-                    <div className="bg-orange-100 p-2 rounded-full mr-4">
-                      <ShoppingBag size={20} className="text-orange-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Sipariş #{order.id}</p>
-                      <p className="text-sm text-gray-600">{formatDate(order.order_date)}</p>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#ece8dc] text-ink">
+                      <ShoppingBag className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Siparis #{order.id}</p>
+                      <p className="truncate text-sm text-ink">{formatDate(order.order_date)}</p>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center">
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium mr-4 ${getStatusColor(order.status || 'processing')}`}>
-                      {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'İşleniyor'}
-                    </div>
-                    <div className="text-right mr-4">
-                      <p className="font-medium">{order.price.toFixed(2)} TL</p>
-                      <p className="text-xs text-gray-600">{order.products.length} Ürün</p>
-                    </div>
-                    {expandedOrders[order.id] ? (
-                      <ChevronUp size={20} className="text-gray-500" />
-                    ) : (
-                      <ChevronDown size={20} className="text-gray-500" />
-                    )}
+
+                  <div className="flex items-center gap-3">
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClassName(order.status)}`}>
+                      {formatStatus(order.status)}
+                    </span>
+                    <span className="text-sm font-bold text-ink">{order.price.toFixed(2)} TL</span>
+                    {expandedOrders[order.id] ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                   </div>
-                </div>
-                
-                {/* Sipariş Detayları (Açılır Panel) */}
+                </button>
+
                 {expandedOrders[order.id] && (
-                  <div className="border-t border-gray-200 p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Sipariş Bilgileri */}
-                      <div>
-                        <h3 className="font-semibold mb-3 flex items-center">
-                          <Clock size={16} className="mr-2" />
-                          Sipariş Bilgileri
-                        </h3>
-                        <div className="bg-gray-50 p-3 rounded-md">
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div className="text-gray-600">Sipariş Tarihi:</div>
-                            <div>{formatDate(order.order_date)}</div>
-                            <div className="text-gray-600">Sipariş Durumu:</div>
-                            <div className={`font-medium ${order.status === 'cancelled' ? 'text-red-600' : ''}`}>
-                              {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'İşleniyor'}
-                            </div>
-                            <div className="text-gray-600">Ödeme Yöntemi:</div>
-                            <div>Kredi Kartı</div>
-                            <div className="text-gray-600">Toplam Tutar:</div>
-                            <div className="font-medium">{order.price.toFixed(2)} TL</div>
-                          </div>
-                        </div>
+                  <div className="border-t border-soft bg-[#fffdf8] p-5">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="surface-card-soft p-4 text-sm">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Siparis bilgisi</p>
+                        <p className="text-ink">Tarih: {formatDate(order.order_date)}</p>
+                        <p className="mt-1 text-ink">Durum: {formatStatus(order.status)}</p>
+                        <p className="mt-1 text-ink">Toplam: {order.price.toFixed(2)} TL</p>
                       </div>
-                      
-                      {/* Teslimat Bilgileri */}
-                      <div>
-                        <h3 className="font-semibold mb-3 flex items-center">
-                          <Package size={16} className="mr-2" />
-                          Teslimat Bilgileri
-                        </h3>
-                        <div className="bg-gray-50 p-3 rounded-md">
-                          {order.address ? (
-                            <div className="text-sm">
-                              <p className="font-medium">{order.address.title}</p>
-                              <p>{order.address.name} {order.address.surname}</p>
-                              <p>{order.address.phone}</p>
-                              <p>{order.address.neighborhood}</p>
-                              <p>{order.address.district}/{order.address.city}</p>
-                            </div>
-                          ) : (
-                            <p className="text-sm text-gray-600">Adres bilgisi bulunamadı</p>
-                          )}
-                        </div>
+
+                      <div className="surface-card-soft p-4 text-sm">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Teslimat bilgisi</p>
+                        {order.address ? (
+                          <>
+                            <p className="font-semibold text-ink">{order.address.title}</p>
+                            <p className="text-ink">{order.address.name} {order.address.surname}</p>
+                            <p className="text-ink">{order.address.phone}</p>
+                            <p className="text-ink">{order.address.neighborhood}</p>
+                            <p className="text-ink">{order.address.district}/{order.address.city}</p>
+                          </>
+                        ) : (
+                          <p className="text-muted">Adres bilgisi bulunamadi.</p>
+                        )}
                       </div>
                     </div>
-                    
-                    {/* Siparişteki Ürünler */}
-                    <div className="mt-6">
-                      <h3 className="font-semibold mb-3 flex items-center">
-                        <ShoppingBag size={16} className="mr-2" />
-                        Ürünler
-                      </h3>
-                      <div className="border rounded-md overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ürün</th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Detay</th>
-                              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Adet</th>
-                              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Fiyat</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {order.products.map((item, index) => (
-                              <tr key={index}>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    {/* Ürün görseli, varsa gösterilir */}
-                                    {item.product && item.product.images && item.product.images[0] ? (
-                                      <img 
-                                        src={item.product.images[0]}
-                                        alt={item.product ? item.product.name : 'Ürün'}
-                                        className="w-12 h-12 object-contain mr-3"
-                                      />
-                                    ) : (
-                                      <div className="w-12 h-12 bg-gray-100 flex items-center justify-center mr-3">
-                                        <ShoppingBag size={20} className="text-gray-400" />
-                                      </div>
-                                    )}
-                                    <div>
-                                      <p className="text-sm font-medium">
-                                        {item.product ? item.product.name : `Ürün #${item.product_id}`}
-                                      </p>
-                                      <p className="text-xs text-gray-500">
-                                        {item.product ? `Ürün Kodu: ${item.product.id}` : `Ürün ID: ${item.product_id}`}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {item.detail || 'Standart'}
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
-                                  {item.count}
-                                </td>
-                                <td className="px-4 py-4 whitespace-nowrap text-sm text-right font-medium">
-                                  {item.product ? 
-                                    (item.product.price * item.count).toFixed(2) : 
-                                    '—'} TL
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+
+                    <div className="mt-4 space-y-3">
+                      {order.products.map((item, index) => {
+                        const image = item.product?.images?.[0]?.url || item.product?.images?.[0]
+                        return (
+                          <div key={`${order.id}-${index}`} className="surface-card-soft flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-3">
+                              {image ? (
+                                <img src={image} alt={item.product?.name || 'Urun'} className="h-14 w-14 rounded-xl object-cover" />
+                              ) : (
+                                <span className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-[#ece8dc]">
+                                  <ShoppingBag className="h-5 w-5 text-muted" />
+                                </span>
+                              )}
+                              <div>
+                                <p className="text-sm font-semibold text-ink">{item.product?.name || `Urun #${item.product_id}`}</p>
+                                <p className="text-xs text-muted">Detay: {item.detail || 'Standart'}</p>
+                              </div>
+                            </div>
+
+                            <div className="text-right text-sm">
+                              <p className="text-muted">Adet: {item.count}</p>
+                              <p className="font-semibold text-ink">
+                                {item.product ? (item.product.price * item.count).toFixed(2) : '--'} TL
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 )}
-              </div>
+              </article>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
-  );
-};
+  )
+}
 
-export default PreviousOrdersPage; 
+export default PreviousOrdersPage

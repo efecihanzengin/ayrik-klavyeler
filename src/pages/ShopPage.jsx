@@ -1,254 +1,252 @@
-import { useEffect, useState, memo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { fetchProducts } from '../store/slices/productSlice';
-import { Loader, Search } from 'lucide-react';
-import ProductList from '../components/ProductList';
-import ReactPaginate from 'react-paginate';
+import { Loader2, Search, SlidersHorizontal } from 'lucide-react'
+import { memo, useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import ReactPaginate from 'react-paginate'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import ProductList from '../components/ProductList'
+import { fetchProducts } from '../store/slices/productSlice'
 
-// Debounce hook'u
 const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+      setDebouncedValue(value)
+    }, delay)
 
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
+    return () => clearTimeout(timer)
+  }, [value, delay])
 
-  return debouncedValue;
-};
+  return debouncedValue
+}
 
-const MemoizedProductList = memo(ProductList);
+const MemoizedProductList = memo(ProductList)
 
 const SORT_OPTIONS = [
-  { value: '', label: 'Varsayılan Sıralama' },
-  { value: 'price:asc', label: 'Fiyat (Düşükten Yükseğe)' },
-  { value: 'price:desc', label: 'Fiyat (Yüksekten Düşüğe)' },
-  { value: 'rating:asc', label: 'Puan (Düşükten Yükseğe)' },
-  { value: 'rating:desc', label: 'Puan (Yüksekten Düşüğe)' }
-];
+  { value: '', label: 'Varsayilan siralama' },
+  { value: 'price:asc', label: 'Fiyat: Dusukten yuksege' },
+  { value: 'price:desc', label: 'Fiyat: Yuksekten dusuge' },
+  { value: 'rating:desc', label: 'Puan: Yuksekten dusuge' },
+  { value: 'rating:asc', label: 'Puan: Dusukten yuksege' },
+]
 
 const sortProducts = (products, sortOption) => {
-  if (!sortOption) return products;
+  if (!sortOption) {
+    return products
+  }
 
-  const [field, direction] = sortOption.split(':');
-  
+  const [field, direction] = sortOption.split(':')
+
   return [...products].sort((a, b) => {
-    let comparison = 0;
-    
-    switch (field) {
-      case 'price':
-        comparison = a.price - b.price;
-        break;
-      case 'rating':
-        comparison = a.rating - b.rating;
-        break;
-      default:
-        return 0;
+    let comparison = 0
+
+    if (field === 'price') {
+      comparison = a.price - b.price
     }
-    
-    return direction === 'asc' ? comparison : -comparison;
-  });
-};
+
+    if (field === 'rating') {
+      comparison = a.rating - b.rating
+    }
+
+    return direction === 'asc' ? comparison : -comparison
+  })
+}
 
 const ShopPage = () => {
-  const dispatch = useDispatch();
-  const { gender, categoryName, categoryId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
-  
-  // URL'den başlangıç değerlerini al
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('filter') || '');
-  const [sortOption, setSortOption] = useState(searchParams.get('sort') || '');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  
-  // Pagination state'leri
-  const itemsPerPage = 25;
-  const [currentPage, setCurrentPage] = useState(0);
-  
-  const products = useSelector(state => state.product.productList);
-  const total = useSelector(state => state.product.total);
-  const fetchState = useSelector(state => state.product.fetchState);
+  const dispatch = useDispatch()
+  const { gender, categoryName, categoryId } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  // Toplam sayfa sayısını hesapla
-  const pageCount = Math.ceil(total / itemsPerPage);
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('filter') || '')
+  const [sortOption, setSortOption] = useState(searchParams.get('sort') || '')
+  const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
-  // URL'i güncelle
+  const itemsPerPage = 25
+  const pageFromQuery = Number.parseInt(searchParams.get('page') || '1', 10)
+  const [currentPage, setCurrentPage] = useState(Number.isNaN(pageFromQuery) ? 0 : Math.max(pageFromQuery - 1, 0))
+
+  const products = useSelector((state) => state.product.productList)
+  const total = useSelector((state) => state.product.total)
+  const fetchState = useSelector((state) => state.product.fetchState)
+
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    
-    // Mevcut parametreleri koru
+    const pageNumber = Number.parseInt(searchParams.get('page') || '1', 10)
+    const parsed = Number.isNaN(pageNumber) ? 1 : pageNumber
+    setCurrentPage(Math.max(parsed - 1, 0))
+  }, [searchParams])
+
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams)
+
     if (debouncedSearchTerm) {
-      params.set('filter', debouncedSearchTerm);
+      next.set('filter', debouncedSearchTerm)
     } else {
-      params.delete('filter');
+      next.delete('filter')
     }
-    
+
     if (sortOption) {
-      params.set('sort', sortOption);
+      next.set('sort', sortOption)
     } else {
-      params.delete('sort');
+      next.delete('sort')
     }
 
-    setSearchParams(params, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchTerm, sortOption]);
+    if (next.get('page') !== '1') {
+      next.set('page', '1')
+    }
 
-  // Sayfa değişikliğini handle et
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true })
+    }
+  }, [debouncedSearchTerm, sortOption, searchParams, setSearchParams])
+
+  useEffect(() => {
+    const params = {
+      limit: itemsPerPage,
+      offset: currentPage * itemsPerPage,
+    }
+
+    if (categoryId) {
+      params.category = categoryId
+    }
+
+    if (debouncedSearchTerm) {
+      params.filter = debouncedSearchTerm
+    }
+
+    if (sortOption) {
+      params.sort = sortOption
+    }
+
+    dispatch(fetchProducts(params))
+  }, [dispatch, categoryId, debouncedSearchTerm, sortOption, currentPage])
+
+  const pageCount = Math.ceil(total / itemsPerPage)
+  const sortedProducts = useMemo(() => sortProducts(products, sortOption), [products, sortOption])
+
   const handlePageChange = (selectedItem) => {
-    setCurrentPage(selectedItem.selected);
-    
-    // URL'i güncelle
-    const params = new URLSearchParams(searchParams);
-    params.set('page', selectedItem.selected + 1);
-    setSearchParams(params);
-  };
+    const selectedPage = selectedItem.selected
+    setCurrentPage(selectedPage)
 
-  // URL'den sayfa numarasını al (ilk yüklemede)
-  useEffect(() => {
-    const page = parseInt(searchParams.get('page')) || 1;
-    setCurrentPage(page - 1); // 0-based index için -1
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const params = new URLSearchParams(searchParams)
+    params.set('page', String(selectedPage + 1))
+    setSearchParams(params)
+  }
 
-  // Ürünleri getir
-  useEffect(() => {
-    const getProducts = async () => {
-      const params = {
-        limit: itemsPerPage,
-        offset: currentPage * itemsPerPage
-      };
-      
-      // Kategori varsa ekle
-      if (categoryId) {
-        params.category = categoryId;
-      }
+  const categoryLabel = categoryName
+    ? categoryName.replace(/-/g, ' ')
+    : 'Tum urunler'
 
-      // Arama filtresi varsa ekle
-      if (debouncedSearchTerm) {
-        params.filter = debouncedSearchTerm;
-      }
-
-      // Sıralama varsa ekle
-      if (sortOption) {
-        params.sort = sortOption;
-      }
-      
-      await dispatch(fetchProducts(params));
-    };
-
-    getProducts();
-  }, [dispatch, categoryId, debouncedSearchTerm, sortOption, currentPage]);
-
-  // Sıralanmış ürünleri hesapla
-  const sortedProducts = sortProducts(products, sortOption);
+  const genderLabel =
+    gender === 'kadin' ? 'Kadin' : gender === 'erkek' ? 'Erkek' : 'Secili Koleksiyon'
 
   if (fetchState === 'FETCHING') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader className="w-8 h-8 animate-spin text-blue-500" />
+      <div className="page-shell flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-accent" />
       </div>
-    );
+    )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-16">
-      {/* Debug bilgisi */}
-      <div className="bg-gray-100 p-4 mb-4 rounded">
-        <p>Category ID: {categoryId}</p>
-        <p>Total Products: {total}</p>
-      </div>
+    <div className="page-enter space-y-8">
+      <section className="page-shell">
+        <div className="surface-card overflow-hidden p-6 sm:p-8">
+          <p className="section-subtitle">Catalog</p>
+          <h1 className="mt-2 text-3xl font-bold text-ink sm:text-4xl">{categoryLabel}</h1>
+          <p className="mt-3 max-w-2xl text-sm text-muted">
+            {genderLabel} kategorisinde filtrelenmis urunler. Arama ve siralama ile hizli secim yapabilirsin.
+          </p>
 
-      {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 mb-8 text-sm">
-        <Link to="/" className="text-gray-500">Home</Link>
-        <span className="text-gray-500">/</span>
-        {gender && (
-          <>
-            <span className="text-gray-500 capitalize">{gender}</span>
-            <span className="text-gray-500">/</span>
-          </>
-        )}
-        {categoryName && (
-          <>
-            <span className="text-gray-500 capitalize">{categoryName}</span>
-            <span className="text-gray-500">/</span>
-          </>
-        )}
-        <span className="text-gray-900">Shop</span>
-      </div>
-
-      {/* Filters Bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        {/* Search input */}
-        <div className="relative flex-1 max-w-md">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Ürün ara..."
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-        </div>
-
-        {/* Sort select */}
-        <div className="w-full md:w-64">
-          <select
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
-            className="w-full py-2 pl-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {SORT_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Results Count */}
-      <div className="mb-4 text-gray-600">
-        {total} ürün bulundu
-      </div>
-
-      {/* Products Grid */}
-      <MemoizedProductList products={sortedProducts} />
-
-      {/* Pagination - pageCount > 0 kontrolü ekledik */}
-      {pageCount > 0 && (
-        <div className="mt-8 flex flex-col items-center">
-          <ReactPaginate
-            previousLabel="← Önceki"
-            nextLabel="Sonraki →"
-            pageCount={pageCount}
-            onPageChange={handlePageChange}
-            forcePage={currentPage}
-            containerClassName="flex space-x-1 items-center"
-            pageClassName="cursor-pointer transition-colors duration-200"
-            pageLinkClassName="px-3 py-2 rounded hover:bg-gray-100 block min-w-[40px] text-center"
-            previousClassName="cursor-pointer transition-colors duration-200"
-            previousLinkClassName="px-4 py-2 rounded hover:bg-gray-100 block font-medium"
-            nextClassName="cursor-pointer transition-colors duration-200"
-            nextLinkClassName="px-4 py-2 rounded hover:bg-gray-100 block font-medium"
-            activeClassName="!bg-blue-500 text-white hover:!bg-blue-600"
-            disabledClassName="opacity-50 cursor-not-allowed pointer-events-none"
-            breakClassName="px-3 py-2"
-          />
-          
-          {/* Sayfa bilgisi */}
-          <div className="mt-4 text-sm text-gray-600">
-            Gösterilen: {currentPage * itemsPerPage + 1} - {Math.min((currentPage + 1) * itemsPerPage, total)} / Toplam: {total} ürün
+          <div className="mt-6 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+            <Link to="/" className="rounded-full bg-[#ece8dc] px-3 py-1.5 transition-colors hover:text-ink">
+              Ana Sayfa
+            </Link>
+            <span>/</span>
+            <Link to="/shop" className="rounded-full bg-[#ece8dc] px-3 py-1.5 transition-colors hover:text-ink">
+              Magaza
+            </Link>
+            {gender && (
+              <>
+                <span>/</span>
+                <span className="rounded-full bg-[#ece8dc] px-3 py-1.5">{genderLabel}</span>
+              </>
+            )}
           </div>
         </div>
+      </section>
+
+      <section className="page-shell">
+        <div className="surface-card p-4 sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative w-full sm:max-w-md">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Urun ara"
+                  className="input-field pl-11"
+                />
+              </div>
+
+              <div className="relative w-full sm:w-[280px]">
+                <SlidersHorizontal className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                <select
+                  value={sortOption}
+                  onChange={(event) => setSortOption(event.target.value)}
+                  className="input-field appearance-none pl-11"
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <p className="rounded-full bg-[#ece8dc] px-4 py-2 text-sm font-semibold text-ink">
+              {total} urun bulundu
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="page-shell">
+        <MemoizedProductList products={sortedProducts} />
+      </section>
+
+      {pageCount > 1 && (
+        <section className="page-shell pb-6">
+          <div className="surface-card-soft flex flex-col items-center gap-4 p-5">
+            <ReactPaginate
+              previousLabel="Onceki"
+              nextLabel="Sonraki"
+              breakLabel="..."
+              pageCount={pageCount}
+              marginPagesDisplayed={1}
+              pageRangeDisplayed={3}
+              onPageChange={handlePageChange}
+              forcePage={currentPage}
+              containerClassName="flex flex-wrap items-center justify-center gap-2"
+              pageClassName=""
+              pageLinkClassName="rounded-full border border-soft px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-ink"
+              previousLinkClassName="rounded-full border border-soft px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-ink"
+              nextLinkClassName="rounded-full border border-soft px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-ink"
+              breakClassName="px-2 text-sm text-muted"
+              activeLinkClassName="!border-none !bg-ink !text-white"
+              disabledClassName="opacity-40 pointer-events-none"
+            />
+
+            <p className="text-xs uppercase tracking-[0.14em] text-muted">
+              Gosterilen: {currentPage * itemsPerPage + 1} - {Math.min((currentPage + 1) * itemsPerPage, total)}
+            </p>
+          </div>
+        </section>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ShopPage; 
+export default ShopPage

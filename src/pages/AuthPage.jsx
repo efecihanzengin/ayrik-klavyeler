@@ -1,419 +1,441 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import axiosInstance from '../api/axios';
-import { loginUser } from '../store/slices/clientSlice';
-import { toast } from 'react-toastify';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useDispatch } from 'react-redux'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import axiosInstance from '../api/axios'
+import { loginUser } from '../store/slices/clientSlice'
+
+const emailRule = {
+  required: 'Email zorunludur',
+  pattern: {
+    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+    message: 'Gecerli bir email adresi gir',
+  },
+}
 
 const AuthPage = () => {
-  // Aktif sekmeyi "login" olarak başlat
-  const [activeTab, setActiveTab] = useState('login');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [roles, setRoles] = useState([]);
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const [showSignupConfirmPassword, setShowSignupConfirmPassword] = useState(false);
-  
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  
-  // Login formu için
-  const loginForm = useForm();
-  
-  // Signup formu için ayrı bir form instance'ı
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get('tab') === 'signup' ? 'signup' : 'login',
+  )
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [roles, setRoles] = useState([])
+
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [showSignupPassword, setShowSignupPassword] = useState(false)
+  const [showSignupConfirmPassword, setShowSignupConfirmPassword] = useState(false)
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const loginForm = useForm()
   const signupForm = useForm({
     defaultValues: {
-      role_id: "3" // Default müşteri rolü
+      role_id: '3',
+    },
+  })
+
+  const selectedRole = signupForm.watch('role_id')
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam === 'signup' && activeTab !== 'signup') {
+      setActiveTab('signup')
+      return
     }
-  });
 
-  const selectedRole = signupForm.watch("role_id");
+    if (tabParam !== 'signup' && activeTab !== 'login') {
+      setActiveTab('login')
+    }
+  }, [activeTab, searchParams])
 
-  // Rolleri çek
   useEffect(() => {
     const fetchRoles = async () => {
-      if (activeTab !== 'signup') return;
-      
-      setIsLoading(true);
-      try {
-        const response = await axiosInstance.get('/roles');
-        setRoles(response.data);
-      } catch {
-        setError('Failed to fetch roles');
-      } finally {
-        setIsLoading(false);
+      if (activeTab !== 'signup') {
+        return
       }
-    };
 
-    fetchRoles();
-  }, [activeTab]);
+      setIsLoading(true)
+      try {
+        const response = await axiosInstance.get('/roles')
+        setRoles(response.data)
+      } catch {
+        setError('Roller yuklenemedi. Lutfen tekrar dene.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchRoles()
+  }, [activeTab])
 
   const onLoginSubmit = async (data) => {
-    setIsLoading(true);
-    setError(null);
-    
+    setIsLoading(true)
+    setError(null)
+
     try {
-      const result = await dispatch(loginUser({
-        email: data.email,
-        password: data.password,
-        rememberMe: data.rememberMe
-      }));
-      
+      const result = await dispatch(
+        loginUser({
+          email: data.email,
+          password: data.password,
+          rememberMe: data.rememberMe,
+        }),
+      )
+
       if (result.success) {
-        toast.success('Successfully logged in!');
-        navigate(-1);
+        toast.success('Basariyla giris yaptin.')
+        navigate(-1)
       } else {
-        toast.error(result.error);
-        setError(result.error);
+        toast.error(result.error)
+        setError(result.error)
       }
     } catch {
-      setError('An error occurred during login');
+      setError('Giris sirasinda beklenmeyen bir hata olustu.')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const onSignUpSubmit = async (data) => {
-    setIsLoading(true);
-    setError(null);
-    
+    setIsLoading(true)
+    setError(null)
+
     try {
       const submitData = {
         name: data.name,
         email: data.email,
         password: data.password,
-        role_id: Number(data.role_id)
-      };
+        role_id: Number(data.role_id),
+      }
 
-      if (data.role_id === "2") {
+      if (data.role_id === '2') {
         submitData.store = {
           name: data.store_name,
           phone: data.store_phone,
           tax_no: data.store_tax_no,
-          bank_account: data.store_bank_account
-        };
+          bank_account: data.store_bank_account,
+        }
       }
 
-      await axiosInstance.post('/signup', submitData);
-      toast.success('User created. Check your email for activation instructions.');
-      navigate(-1);
+      await axiosInstance.post('/signup', submitData)
+      toast.success('Kullanici olusturuldu. Aktivasyon mailini kontrol et.')
+      navigate(-1)
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'An error occurred during signup';
-      toast.error(errorMessage);
-      setError(errorMessage);
+      const errorMessage = err.response?.data?.message || 'Kayit sirasinda bir hata olustu.'
+      toast.error(errorMessage)
+      setError(errorMessage)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
+
+  const changeTab = (tab) => {
+    setActiveTab(tab)
+    setError(null)
+
+    const next = new URLSearchParams(searchParams)
+    if (tab === 'signup') {
+      next.set('tab', 'signup')
+    } else {
+      next.delete('tab')
+    }
+
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true })
+    }
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-20">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-        {/* Tab Buttons */}
-        <div className="flex border-b">
-          <button
-            type="button"
-            className={`flex-1 py-3 px-4 text-center font-medium ${
-              activeTab === 'login' 
-                ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50' 
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('login')}
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            className={`flex-1 py-3 px-4 text-center font-medium ${
-              activeTab === 'signup' 
-                ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50' 
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('signup')}
-          >
-            Sign Up
-          </button>
-        </div>
+    <div className="page-enter">
+      <section className="page-shell">
+        <div className="surface-card overflow-hidden">
+          <div className="grid lg:grid-cols-[1fr_1.1fr]">
+            <aside className="relative overflow-hidden bg-ink p-8 text-white sm:p-10">
+              <div className="absolute -right-20 top-20 h-48 w-48 rounded-full bg-[#d9a520]/25 blur-3xl" />
+              <div className="absolute -left-16 bottom-8 h-40 w-40 rounded-full bg-[#0f5c4a]/35 blur-3xl" />
 
-        <div className="p-6">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
+              <p className="chip mb-4">Ayrik Account</p>
+              <h1 className="text-3xl font-bold sm:text-4xl">Alisveris deneyimini senkronize et.</h1>
+              <p className="mt-4 max-w-md text-sm text-white/80">
+                Kayit oldugunda adres, kart ve siparis gecmisini tek panelde yonetebilirsin.
+              </p>
 
-          {/* Login Form */}
-          {activeTab === 'login' && (
-            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-              <div>
-                <label className="block text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  {...loginForm.register("email", { 
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address"
-                    }
-                  })}
-                  className="w-full p-2 border rounded"
-                />
-                {loginForm.formState.errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.email.message}</p>
-                )}
-              </div>
-
-              <div className="relative">
-                <label className="block text-gray-700 mb-2">Password</label>
-                <div className="relative">
-                  <input
-                    type={showLoginPassword ? "text" : "password"}
-                    {...loginForm.register("password", { required: "Password is required" })}
-                    className="w-full p-2 border rounded pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowLoginPassword(!showLoginPassword)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-                  >
-                    {showLoginPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
+              <div className="mt-10 space-y-4 text-sm">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
+                  <ShieldCheck className="h-4 w-4" />
+                  Guvenli oturum yonetimi
                 </div>
-                {loginForm.formState.errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.password.message}</p>
-                )}
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  {...loginForm.register("rememberMe")}
-                  className="mr-2"
-                />
-                <label htmlFor="rememberMe" className="text-gray-700">Remember me</label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:bg-blue-300"
-              >
-                {isLoading ? 'Logging in...' : 'Login'}
-              </button>
-            </form>
-          )}
-
-          {/* Sign Up Form */}
-          {activeTab === 'signup' && (
-            <form onSubmit={signupForm.handleSubmit(onSignUpSubmit)} className="space-y-4">
-              {/* Name Input */}
-              <div>
-                <label className="block text-gray-700 mb-2">Name</label>
-                <input
-                  type="text"
-                  {...signupForm.register("name", { 
-                    required: "Name is required",
-                    minLength: { value: 3, message: "Name must be at least 3 characters" }
-                  })}
-                  className="w-full p-2 border rounded"
-                />
-                {signupForm.formState.errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.name.message}</p>
-                )}
-              </div>
-
-              {/* Email Input */}
-              <div>
-                <label className="block text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  {...signupForm.register("email", { 
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address"
-                    }
-                  })}
-                  className="w-full p-2 border rounded"
-                />
-                {signupForm.formState.errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.email.message}</p>
-                )}
-              </div>
-
-              {/* Password Input */}
-              <div className="relative">
-                <label className="block text-gray-700 mb-2">Password</label>
-                <div className="relative">
-                  <input
-                    type={showSignupPassword ? "text" : "password"}
-                    {...signupForm.register("password", { 
-                      required: "Password is required",
-                      minLength: { value: 8, message: "Password must be at least 8 characters" },
-                      validate: {
-                        hasNumber: (value) => /\d/.test(value) || "Password must contain at least one number",
-                        hasUpperCase: (value) => /[A-Z]/.test(value) || "Password must contain at least one uppercase letter",
-                        hasLowerCase: (value) => /[a-z]/.test(value) || "Password must contain at least one lowercase letter",
-                        hasSpecialChar: (value) => 
-                          /[!@#$%^&*.,;:'"(){}[\]<>?/\\|_+-=]/.test(value) || 
-                          "Password must contain at least one special character"
-                      }
-                    })}
-                    className="w-full p-2 border rounded pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignupPassword(!showSignupPassword)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-                  >
-                    {showSignupPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
+                  <LockKeyhole className="h-4 w-4" />
+                  Siparis ve odeme verileri korumali
                 </div>
-                {signupForm.formState.errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.password.message}</p>
-                )}
               </div>
+            </aside>
 
-              {/* Confirm Password */}
-              <div className="relative">
-                <label className="block text-gray-700 mb-2">Confirm Password</label>
-                <div className="relative">
-                  <input
-                    type={showSignupConfirmPassword ? "text" : "password"}
-                    {...signupForm.register("confirmPassword", { 
-                      required: "Please confirm your password",
-                      validate: value => value === signupForm.watch('password') || "Passwords do not match"
-                    })}
-                    className="w-full p-2 border rounded pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignupConfirmPassword(!showSignupConfirmPassword)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-                  >
-                    {showSignupConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {signupForm.formState.errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.confirmPassword.message}</p>
-                )}
-              </div>
-
-              {/* Role Selection */}
-              <div>
-                <label className="block text-gray-700 mb-2">Role</label>
-                <select
-                  {...signupForm.register("role_id")}
-                  className="w-full p-2 border rounded"
+            <div className="bg-[#fffdf8] p-6 sm:p-8">
+              <div className="mb-6 grid grid-cols-2 rounded-full bg-[#ece8dc] p-1">
+                <button
+                  type="button"
+                  onClick={() => changeTab('login')}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                    activeTab === 'login' ? 'bg-ink text-white' : 'text-muted hover:text-ink'
+                  }`}
                 >
-                  {roles.length > 0 ? (
-                    roles.map(role => (
-                      role.code !== 'admin' && // Admin rolünü gösterme
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="3">Müşteri</option>
-                  )}
-                </select>
+                  Giris Yap
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeTab('signup')}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                    activeTab === 'signup' ? 'bg-ink text-white' : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  Kayit Ol
+                </button>
               </div>
 
-              {/* Store Fields - Conditional Rendering (role_id: 2 için) */}
-              {selectedRole === "2" && (
-                <>
-                  {/* Store Name */}
-                  <div>
-                    <label className="block text-gray-700 mb-2">Store Name</label>
-                    <input
-                      type="text"
-                      {...signupForm.register("store_name", { 
-                        required: "Store name is required",
-                        minLength: { value: 3, message: "Store name must be at least 3 characters" }
-                      })}
-                      className="w-full p-2 border rounded"
-                    />
-                    {signupForm.formState.errors.store_name && (
-                      <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.store_name.message}</p>
-                    )}
-                  </div>
-
-                  {/* Store Phone */}
-                  <div>
-                    <label className="block text-gray-700 mb-2">Store Phone</label>
-                    <input
-                      type="tel"
-                      {...signupForm.register("store_phone", { 
-                        required: "Store phone is required",
-                        pattern: {
-                          value: /^(\+90|0)?[0-9]{10}$/,
-                          message: "Please enter a valid Turkish phone number"
-                        }
-                      })}
-                      className="w-full p-2 border rounded"
-                    />
-                    {signupForm.formState.errors.store_phone && (
-                      <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.store_phone.message}</p>
-                    )}
-                  </div>
-
-                  {/* Tax ID */}
-                  <div>
-                    <label className="block text-gray-700 mb-2">Tax ID</label>
-                    <input
-                      type="text"
-                      {...signupForm.register("store_tax_no", { 
-                        required: "Tax ID is required",
-                        pattern: {
-                          value: /^T\d{9}V\d{2}$/,
-                          message: "Please enter a valid Tax ID (Format: TXXXXXXXXVXX)"
-                        }
-                      })}
-                      className="w-full p-2 border rounded"
-                    />
-                    {signupForm.formState.errors.store_tax_no && (
-                      <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.store_tax_no.message}</p>
-                    )}
-                  </div>
-
-                  {/* Bank Account */}
-                  <div>
-                    <label className="block text-gray-700 mb-2">Bank Account (IBAN)</label>
-                    <input
-                      type="text"
-                      {...signupForm.register("store_bank_account", { 
-                        required: "IBAN is required",
-                        pattern: {
-                          value: /^TR\d{2}\d{5}[A-Z0-9]{17}$/,
-                          message: "Please enter a valid Turkish IBAN"
-                        }
-                      })}
-                      className="w-full p-2 border rounded"
-                    />
-                    {signupForm.formState.errors.store_bank_account && (
-                      <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.store_bank_account.message}</p>
-                    )}
-                  </div>
-                </>
+              {error && (
+                <div className="mb-5 rounded-2xl border border-[#e6b0b0] bg-[#fdf1f1] px-4 py-3 text-sm text-[#a12f2f]">
+                  {error}
+                </div>
               )}
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:bg-blue-300"
-              >
-                {isLoading ? 'Signing up...' : 'Sign Up'}
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
+              {activeTab === 'login' ? (
+                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-ink">Email</label>
+                    <input type="email" {...loginForm.register('email', emailRule)} className="input-field" />
+                    {loginForm.formState.errors.email && (
+                      <p className="mt-1 text-xs text-[#a12f2f]">{loginForm.formState.errors.email.message}</p>
+                    )}
+                  </div>
 
-export default AuthPage; 
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-ink">Sifre</label>
+                    <div className="relative">
+                      <input
+                        type={showLoginPassword ? 'text' : 'password'}
+                        {...loginForm.register('password', { required: 'Sifre zorunludur' })}
+                        className="input-field pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowLoginPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+                      >
+                        {showLoginPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                    {loginForm.formState.errors.password && (
+                      <p className="mt-1 text-xs text-[#a12f2f]">{loginForm.formState.errors.password.message}</p>
+                    )}
+                  </div>
+
+                  <label className="inline-flex items-center gap-2 text-sm text-muted">
+                    <input type="checkbox" {...loginForm.register('rememberMe')} />
+                    Beni hatirla
+                  </label>
+
+                  <button type="submit" disabled={isLoading} className="btn-primary w-full justify-center disabled:opacity-50">
+                    {isLoading ? 'Giris yapiliyor...' : 'Giris Yap'}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={signupForm.handleSubmit(onSignUpSubmit)} className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-ink">Ad Soyad</label>
+                    <input
+                      type="text"
+                      {...signupForm.register('name', {
+                        required: 'Ad Soyad zorunludur',
+                        minLength: { value: 3, message: 'En az 3 karakter olmali' },
+                      })}
+                      className="input-field"
+                    />
+                    {signupForm.formState.errors.name && (
+                      <p className="mt-1 text-xs text-[#a12f2f]">{signupForm.formState.errors.name.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-ink">Email</label>
+                    <input type="email" {...signupForm.register('email', emailRule)} className="input-field" />
+                    {signupForm.formState.errors.email && (
+                      <p className="mt-1 text-xs text-[#a12f2f]">{signupForm.formState.errors.email.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-ink">Sifre</label>
+                    <div className="relative">
+                      <input
+                        type={showSignupPassword ? 'text' : 'password'}
+                        {...signupForm.register('password', {
+                          required: 'Sifre zorunludur',
+                          minLength: { value: 8, message: 'En az 8 karakter olmali' },
+                          validate: {
+                            hasNumber: (value) => /\d/.test(value) || 'En az bir rakam olmali',
+                            hasUpperCase: (value) => /[A-Z]/.test(value) || 'En az bir buyuk harf olmali',
+                            hasLowerCase: (value) => /[a-z]/.test(value) || 'En az bir kucuk harf olmali',
+                            hasSpecialChar: (value) =>
+                              /[!@#$%^&*.,;:'"(){}[\]<>?/\\|_+-=]/.test(value) ||
+                              'En az bir ozel karakter olmali',
+                          },
+                        })}
+                        className="input-field pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSignupPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+                      >
+                        {showSignupPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                    {signupForm.formState.errors.password && (
+                      <p className="mt-1 text-xs text-[#a12f2f]">{signupForm.formState.errors.password.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-ink">Sifre Tekrar</label>
+                    <div className="relative">
+                      <input
+                        type={showSignupConfirmPassword ? 'text' : 'password'}
+                        {...signupForm.register('confirmPassword', {
+                          required: 'Sifre tekrari zorunludur',
+                          validate: (value) => value === signupForm.watch('password') || 'Sifreler ayni olmali',
+                        })}
+                        className="input-field pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSignupConfirmPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+                      >
+                        {showSignupConfirmPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+                    {signupForm.formState.errors.confirmPassword && (
+                      <p className="mt-1 text-xs text-[#a12f2f]">{signupForm.formState.errors.confirmPassword.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-ink">Rol</label>
+                    <select {...signupForm.register('role_id')} className="input-field">
+                      {roles.length > 0 ? (
+                        roles.map(
+                          (role) =>
+                            role.code !== 'admin' && (
+                              <option key={role.id} value={role.id}>
+                                {role.name}
+                              </option>
+                            ),
+                        )
+                      ) : (
+                        <option value="3">Musteri</option>
+                      )}
+                    </select>
+                  </div>
+
+                  {selectedRole === '2' && (
+                    <div className="space-y-4 rounded-2xl border border-soft bg-white p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Magaza Bilgileri</p>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-semibold text-ink">Magaza Adi</label>
+                        <input
+                          type="text"
+                          {...signupForm.register('store_name', {
+                            required: 'Magaza adi zorunludur',
+                            minLength: { value: 3, message: 'En az 3 karakter olmali' },
+                          })}
+                          className="input-field"
+                        />
+                        {signupForm.formState.errors.store_name && (
+                          <p className="mt-1 text-xs text-[#a12f2f]">{signupForm.formState.errors.store_name.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-semibold text-ink">Telefon</label>
+                        <input
+                          type="tel"
+                          {...signupForm.register('store_phone', {
+                            required: 'Telefon zorunludur',
+                            pattern: {
+                              value: /^(\+90|0)?[0-9]{10}$/,
+                              message: 'Gecerli bir telefon numarasi gir',
+                            },
+                          })}
+                          className="input-field"
+                        />
+                        {signupForm.formState.errors.store_phone && (
+                          <p className="mt-1 text-xs text-[#a12f2f]">{signupForm.formState.errors.store_phone.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-semibold text-ink">Vergi No</label>
+                        <input
+                          type="text"
+                          {...signupForm.register('store_tax_no', {
+                            required: 'Vergi no zorunludur',
+                            pattern: {
+                              value: /^T\d{9}V\d{2}$/,
+                              message: 'Format: TXXXXXXXXXVXX',
+                            },
+                          })}
+                          className="input-field"
+                        />
+                        {signupForm.formState.errors.store_tax_no && (
+                          <p className="mt-1 text-xs text-[#a12f2f]">
+                            {signupForm.formState.errors.store_tax_no.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-semibold text-ink">IBAN</label>
+                        <input
+                          type="text"
+                          {...signupForm.register('store_bank_account', {
+                            required: 'IBAN zorunludur',
+                            pattern: {
+                              value: /^TR\d{2}\d{5}[A-Z0-9]{17}$/,
+                              message: 'Gecerli bir TR IBAN gir',
+                            },
+                          })}
+                          className="input-field"
+                        />
+                        {signupForm.formState.errors.store_bank_account && (
+                          <p className="mt-1 text-xs text-[#a12f2f]">
+                            {signupForm.formState.errors.store_bank_account.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <button type="submit" disabled={isLoading} className="btn-primary w-full justify-center disabled:opacity-50">
+                    {isLoading ? 'Kayit olusturuluyor...' : 'Kayit Ol'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+export default AuthPage

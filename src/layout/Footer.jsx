@@ -1,142 +1,106 @@
-import { Phone, MapPin, Mail } from 'lucide-react';
-import { Facebook, Instagram, Youtube } from 'lucide-react';
+import { Instagram, Linkedin, Mail, MapPin, Phone, Send, Youtube } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
   return (
-    <footer className="bg-[#252B42] text-white">
-      {/* Desktop Footer */}
-      <div className="hidden md:block container mx-auto px-4 py-12">
-        <div className="grid grid-cols-5 gap-8">
-          {/* Company Info */}
-          <div className="col-span-1">
-            <h3 className="font-bold mb-5">Company Info</h3>
-            <ul className="space-y-3">
-              <li><a href="/about" className="text-gray-300 hover:text-white">About Us</a></li>
-              <li><a href="/career" className="text-gray-300 hover:text-white">Career</a></li>
-              <li><a href="/blog" className="text-gray-300 hover:text-white">Blog</a></li>
-              <li><a href="/legal" className="text-gray-300 hover:text-white">Legal</a></li>
-            </ul>
+    <footer className="mt-20 border-t border-soft bg-[#ece8dc]">
+      <div className="page-shell py-14">
+        <div className="grid gap-10 lg:grid-cols-[1.2fr_2fr]">
+          <div className="surface-card p-6">
+            <p className="section-subtitle mb-3">Newsletter</p>
+            <h3 className="mb-3 text-2xl font-bold text-ink">Yeni koleksiyonlari ilk sen gor.</h3>
+            <p className="mb-6 text-sm text-muted">
+              Haftalik drop bildirimleri, style notlari ve kampanyalari tek mailde gonderiyoruz.
+            </p>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input type="email" placeholder="E-posta adresin" className="input-field flex-1" />
+              <button type="button" className="btn-primary whitespace-nowrap px-5">
+                <Send className="h-4 w-4" />
+                Katil
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-2 text-sm text-muted">
+              <p className="inline-flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                +90 (212) 555 01 03
+              </p>
+              <p className="inline-flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                hello@ayrikklavyeler.com
+              </p>
+              <p className="inline-flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Nispetiye Cad. No:45 Istanbul
+              </p>
+            </div>
           </div>
 
-          {/* Features */}
-          <div className="col-span-1">
-            <h3 className="font-bold mb-5">Features</h3>
-            <ul className="space-y-3">
-              <li><a href="/marketing" className="text-gray-300 hover:text-white">Business Marketing</a></li>
-              <li><a href="/analytics" className="text-gray-300 hover:text-white">User Analytic</a></li>
-              <li><a href="/support" className="text-gray-300 hover:text-white">Unlimited Support</a></li>
-            </ul>
-          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="surface-card-soft p-6">
+              <h4 className="mb-4 text-lg font-bold text-ink">Marka</h4>
+              <div className="space-y-2.5 text-sm text-muted">
+                <Link to="/about" className="block transition-colors hover:text-ink">
+                  Hakkimizda
+                </Link>
+                <Link to="/blog" className="block transition-colors hover:text-ink">
+                  Blog
+                </Link>
+                <Link to="/contact" className="block transition-colors hover:text-ink">
+                  Iletisim
+                </Link>
+                <Link to="/legal" className="block transition-colors hover:text-ink">
+                  Yasal metinler
+                </Link>
+              </div>
+            </div>
 
-          {/* Resources */}
-          <div className="col-span-1">
-            <h3 className="font-bold mb-5">Resources</h3>
-            <ul className="space-y-3">
-              <li><a href="/ios" className="text-gray-300 hover:text-white">IOS & Android</a></li>
-              <li><a href="/demo" className="text-gray-300 hover:text-white">Watch a Demo</a></li>
-              <li><a href="/customers" className="text-gray-300 hover:text-white">Customers</a></li>
-              <li><a href="/api" className="text-gray-300 hover:text-white">API</a></li>
-            </ul>
-          </div>
+            <div className="surface-card-soft p-6">
+              <h4 className="mb-4 text-lg font-bold text-ink">Alisveris</h4>
+              <div className="space-y-2.5 text-sm text-muted">
+                <Link to="/shop" className="block transition-colors hover:text-ink">
+                  Tum urunler
+                </Link>
+                <Link to="/pricing" className="block transition-colors hover:text-ink">
+                  Fiyatlandirma
+                </Link>
+                <Link to="/cart" className="block transition-colors hover:text-ink">
+                  Sepetim
+                </Link>
+                <Link to="/my-orders" className="block transition-colors hover:text-ink">
+                  Siparislerim
+                </Link>
+              </div>
+            </div>
 
-          {/* Get In Touch */}
-          <div className="col-span-2">
-            <h3 className="font-bold mb-5">Get In Touch</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-2">
-                <Phone size={20} className="text-gray-300" />
-                <span className="text-gray-300">(480) 555-0103</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <MapPin size={20} className="text-gray-300" />
-                <span className="text-gray-300">4517 Washington Ave.</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail size={20} className="text-gray-300" />
-                <span className="text-gray-300">debra.holt@example.com</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="mt-12 flex justify-between items-center border-t border-gray-700 pt-6">
-          <p className="text-sm text-gray-300">Made With Love By Finland All Right Reserved</p>
-          <div className="flex gap-4">
-            <Facebook className="w-5 h-5 text-gray-300 hover:text-white cursor-pointer" />
-            <Instagram className="w-5 h-5 text-gray-300 hover:text-white cursor-pointer" />
-            <Youtube className="w-5 h-5 text-gray-300 hover:text-white cursor-pointer" />
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Footer */}
-      <div className="md:hidden px-4 py-8">
-        <div className="space-y-8">
-          {/* Company Info */}
-          <div>
-            <h3 className="font-bold mb-4">Company Info</h3>
-            <ul className="space-y-3">
-              <li><a href="/about" className="text-gray-300">About Us</a></li>
-              <li><a href="/career" className="text-gray-300">Career</a></li>
-              <li><a href="/blog" className="text-gray-300">Blog</a></li>
-              <li><a href="/legal" className="text-gray-300">Legal</a></li>
-            </ul>
-          </div>
-
-          {/* Features */}
-          <div>
-            <h3 className="font-bold mb-4">Features</h3>
-            <ul className="space-y-3">
-              <li><a href="/marketing" className="text-gray-300">Business Marketing</a></li>
-              <li><a href="/analytics" className="text-gray-300">User Analytic</a></li>
-              <li><a href="/support" className="text-gray-300">Unlimited Support</a></li>
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h3 className="font-bold mb-4">Resources</h3>
-            <ul className="space-y-3">
-              <li><a href="/ios" className="text-gray-300">IOS & Android</a></li>
-              <li><a href="/demo" className="text-gray-300">Watch a Demo</a></li>
-              <li><a href="/customers" className="text-gray-300">Customers</a></li>
-              <li><a href="/api" className="text-gray-300">API</a></li>
-            </ul>
-          </div>
-
-          {/* Get In Touch */}
-          <div>
-            <h3 className="font-bold mb-4">Get In Touch</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-2">
-                <Phone size={20} className="text-gray-300" />
-                <span className="text-gray-300">(480) 555-0103</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <MapPin size={20} className="text-gray-300" />
-                <span className="text-gray-300">4517 Washington Ave.</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail size={20} className="text-gray-300" />
-                <span className="text-gray-300">debra.holt@example.com</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Social Media & Copyright */}
-          <div className="space-y-4 pt-4 border-t border-gray-700">
-            <p className="text-sm text-gray-300">Made With Love By Finland All Right Reserved</p>
-            <div className="flex gap-4">
-              <Facebook className="w-5 h-5 text-gray-300" />
-              <Instagram className="w-5 h-5 text-gray-300" />
-              <Youtube className="w-5 h-5 text-gray-300" />
+            <div className="surface-card-soft p-6">
+              <h4 className="mb-4 text-lg font-bold text-ink">Takip Et</h4>
+              <div className="space-y-2.5 text-sm text-muted">
+                <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 transition-colors hover:text-ink">
+                  <Instagram className="h-4 w-4" />
+                  Instagram
+                </a>
+                <a href="https://www.youtube.com" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 transition-colors hover:text-ink">
+                  <Youtube className="h-4 w-4" />
+                  YouTube
+                </a>
+                <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 transition-colors hover:text-ink">
+                  <Linkedin className="h-4 w-4" />
+                  LinkedIn
+                </a>
+              </div>
             </div>
           </div>
         </div>
+
+        <div className="mt-10 flex flex-col gap-2 border-t border-soft pt-5 text-xs uppercase tracking-[0.18em] text-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>2026 Ayrik Klavyeler. Tum haklari saklidir.</p>
+          <p>Built for modern commerce experiences.</p>
+        </div>
       </div>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer

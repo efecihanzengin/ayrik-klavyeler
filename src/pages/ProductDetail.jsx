@@ -1,115 +1,132 @@
-import { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchProductDetail, clearProductDetail } from '../store/slices/productSlice';
-import { Loader, ArrowLeft } from 'lucide-react';
-import { addToCart } from '../store/slices/cartSlice';
+import { ArrowLeft, Loader2, ShieldCheck, Sparkles, Truck } from 'lucide-react'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate, useParams } from 'react-router-dom'
+import { addToCart } from '../store/slices/cartSlice'
+import { clearProductDetail, fetchProductDetail } from '../store/slices/productSlice'
 
 const ProductDetail = () => {
-  const { productId } = useParams();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const { productId } = useParams()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
-  const product = useSelector(state => state.product.selectedProduct);
-  const fetchState = useSelector(state => state.product.productFetchState);
+  const product = useSelector((state) => state.product.selectedProduct)
+  const fetchState = useSelector((state) => state.product.productFetchState)
 
   useEffect(() => {
-    dispatch(fetchProductDetail(productId));
+    dispatch(fetchProductDetail(productId))
 
-    // Cleanup function - component unmount olduğunda product detayını temizle
     return () => {
-      dispatch(clearProductDetail());
-    };
-  }, [dispatch, productId]);
+      dispatch(clearProductDetail())
+    }
+  }, [dispatch, productId])
 
   const handleAddToCart = () => {
-    dispatch(addToCart(product));
-  };
+    dispatch(addToCart(product))
+  }
 
   if (fetchState === 'FETCHING') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader className="w-8 h-8 animate-spin text-blue-500" />
+      <div className="page-shell flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-accent" />
       </div>
-    );
+    )
   }
 
   if (fetchState === 'FAILED' || !product) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-500 mb-4">Ürün yüklenirken bir hata oluştu.</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-blue-500 hover:text-blue-600"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Geri Dön
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8 mt-16">
-      {/* Geri dönüş butonu */}
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center text-gray-600 hover:text-gray-800 mb-8"
-      >
-        <ArrowLeft className="w-5 h-5 mr-2" />
-        Geri Dön
-      </button>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Ürün görseli */}
-        <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200">
-          <img
-            src={product.images[0].url}
-            alt={product.name}
-            className="h-full w-full object-cover object-center"
-          />
-        </div>
-
-        {/* Ürün detayları */}
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h1>
-          <p className="text-gray-600 mb-6">{product.description}</p>
-          
-          <div className="flex items-center mb-6">
-            <div className="flex items-center">
-              <span className="text-yellow-400 text-xl">★</span>
-              <span className="ml-1 text-gray-600">{product.rating.toFixed(1)}</span>
-            </div>
-            <span className="mx-4 text-gray-300">|</span>
-            <span className="text-gray-600">{product.sell_count} satış</span>
-          </div>
-
-          <div className="flex items-center justify-between mb-6">
-            <div className="text-3xl font-bold text-gray-900">
-              ₺{product.price.toFixed(2)}
-            </div>
-            <div className={`px-4 py-2 rounded ${
-              product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
-              {product.stock > 0 ? `${product.stock} adet stokta` : 'Stokta yok'}
-            </div>
-          </div>
-
-          <button
-            disabled={product.stock === 0}
-            onClick={handleAddToCart}
-            className={`w-full py-3 px-8 rounded-lg text-white font-medium ${
-              product.stock > 0 
-                ? 'bg-blue-600 hover:bg-blue-700' 
-                : 'bg-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {product.stock > 0 ? 'Sepete Ekle' : 'Stokta Yok'}
+      <div className="page-shell py-16">
+        <div className="surface-card mx-auto max-w-xl p-10 text-center">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.15em] text-[#a12f2f]">Error</p>
+          <h1 className="mb-2 text-2xl font-bold">Urun verisi yuklenemedi</h1>
+          <p className="mb-6 text-sm text-muted">Baglanti sorunu veya gecersiz urun kaydi olabilir.</p>
+          <button type="button" onClick={() => navigate(-1)} className="btn-primary">
+            <ArrowLeft className="h-4 w-4" />
+            Geri Don
           </button>
         </div>
       </div>
-    </div>
-  );
-};
+    )
+  }
 
-export default ProductDetail; 
+  const imageUrl =
+    product.images?.[0]?.url ||
+    'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80'
+
+  return (
+    <div className="page-enter">
+      <section className="page-shell">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-soft bg-white px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-ink"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Geri Don
+        </button>
+
+        <div className="surface-card overflow-hidden">
+          <div className="grid gap-8 p-6 lg:grid-cols-[1fr_1fr] lg:p-8">
+            <div className="overflow-hidden rounded-[24px] bg-[#e4dfd1]">
+              <img src={imageUrl} alt={product.name} className="h-full w-full object-cover" />
+            </div>
+
+            <div className="flex flex-col">
+              <span className="chip mb-4 w-fit">Product detail</span>
+              <h1 className="text-3xl font-bold text-ink sm:text-4xl">{product.name}</h1>
+
+              <div className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-[#ece8dc] px-3 py-1 text-sm font-semibold text-ink">
+                <Sparkles className="h-4 w-4 text-accent" />
+                {product.rating.toFixed(1)} rating
+              </div>
+
+              <p className="mt-5 text-sm leading-relaxed text-muted">{product.description}</p>
+
+              <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-y border-soft py-5">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">Fiyat</p>
+                  <p className="text-3xl font-bold text-ink">{product.price.toFixed(2)} TL</p>
+                </div>
+                <div
+                  className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    product.stock > 0 ? 'bg-[#e8f0ee] text-[#0f5c4a]' : 'bg-[#f8e8e8] text-[#a12f2f]'
+                  }`}
+                >
+                  {product.stock > 0 ? `${product.stock} adet stokta` : 'Stokta yok'}
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="surface-card-soft flex items-center gap-2 p-3 text-sm">
+                  <Truck className="h-4 w-4 text-accent" />
+                  Hizli kargo
+                </div>
+                <div className="surface-card-soft flex items-center gap-2 p-3 text-sm">
+                  <ShieldCheck className="h-4 w-4 text-accent" />
+                  Guvenli odeme
+                </div>
+                <div className="surface-card-soft flex items-center gap-2 p-3 text-sm">
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  Premium secim
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={product.stock === 0}
+                onClick={handleAddToCart}
+                className={`mt-7 rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] transition-colors ${
+                  product.stock > 0 ? 'bg-ink text-white hover:bg-black' : 'cursor-not-allowed bg-gray-300 text-gray-600'
+                }`}
+              >
+                {product.stock > 0 ? 'Sepete Ekle' : 'Stokta Yok'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+export default ProductDetail
