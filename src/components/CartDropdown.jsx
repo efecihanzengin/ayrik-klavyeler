@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { removeFromCart, updateCartItem } from '../store/actions/cartActions';
+import { removeFromCart, updateCartItem } from '../store/slices/cartSlice';
 import { Trash2, Minus, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

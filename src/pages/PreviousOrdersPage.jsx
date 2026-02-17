@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import axiosInstance from "../api/axios";
 import { toast } from "react-toastify";
-import { ChevronDown, ChevronUp, Package, ShoppingBag, Clock, Calendar, DollarSign } from 'lucide-react';
+import { ChevronDown, ChevronUp, Package, ShoppingBag, Clock } from 'lucide-react';
 
 const PreviousOrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState({});
-  const user = useSelector(state => state.client.user);
 
   useEffect(() => {
     fetchOrders();

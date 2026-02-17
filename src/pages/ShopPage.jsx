@@ -1,7 +1,7 @@
 import { useEffect, useState, memo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { fetchProducts } from '../store/actions/productActions';
+import { fetchProducts } from '../store/slices/productSlice';
 import { Loader, Search } from 'lucide-react';
 import ProductList from '../components/ProductList';
 import ReactPaginate from 'react-paginate';
@@ -95,6 +95,7 @@ const ShopPage = () => {
     }
 
     setSearchParams(params, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm, sortOption]);
 
   // Sayfa değişikliğini handle et
@@ -111,6 +112,7 @@ const ShopPage = () => {
   useEffect(() => {
     const page = parseInt(searchParams.get('page')) || 1;
     setCurrentPage(page - 1); // 0-based index için -1
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Ürünleri getir

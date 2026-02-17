@@ -1,11 +1,10 @@
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import ProductCard from '../components/ProductCard';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { fetchCategories } from '../store/actions/productActions';
+import { fetchCategories } from '../store/slices/productSlice';
 
 const HomePage = () => {
   const dispatch = useDispatch();

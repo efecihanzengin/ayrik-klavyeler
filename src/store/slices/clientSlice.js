@@ -1,31 +1,53 @@
+import { createSlice } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axios';
 
-// Action Creators
-export const setUser = (user) => ({
-  type: 'SET_USER',
-  payload: user
+const initialState = {
+  user: {},
+  addressList: [],
+  creditCards: [],
+  roles: [],
+  theme: 'light',
+  language: 'en'
+};
+
+const clientSlice = createSlice({
+  name: 'client',
+  initialState,
+  reducers: {
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
+    setRoles: (state, action) => {
+      state.roles = action.payload;
+    },
+    setTheme: (state, action) => {
+      state.theme = action.payload;
+    },
+    setLanguage: (state, action) => {
+      state.language = action.payload;
+    },
+    setAddressList: (state, action) => {
+      state.addressList = action.payload;
+    },
+    setCreditCards: (state, action) => {
+      state.creditCards = action.payload;
+    }
+  }
 });
 
-export const setRoles = (roles) => ({
-  type: 'SET_ROLES',
-  payload: roles
-});
+export const {
+  setUser,
+  setRoles,
+  setTheme,
+  setLanguage,
+  setAddressList,
+  setCreditCards
+} = clientSlice.actions;
 
-export const setTheme = (theme) => ({
-  type: 'SET_THEME',
-  payload: theme
-});
-
-export const setLanguage = (language) => ({
-  type: 'SET_LANGUAGE',
-  payload: language
-});
-
-// Thunk Action Creator for roles
+// Thunks
 export const fetchRoles = () => async (dispatch, getState) => {
   const { client } = getState();
   
-  // Sadece roles boşsa fetch yap
   if (client.roles.length === 0) {
     try {
       const response = await axiosInstance.get('/roles');
@@ -49,13 +71,9 @@ export const loginUser = (credentials) => async (dispatch) => {
       throw new Error('No token received');
     }
 
-    // Token'ı localStorage'a kaydet
     localStorage.setItem('token', token);
+    axiosInstance.defaults.headers.common['Authorization'] = token;
     
-    // Token'ı axios instance'ına default header olarak ekle
-    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    
-    // User bilgilerini store'a kaydet
     const userData = {
       name: response.data.name,
       email: response.data.email,
@@ -63,8 +81,6 @@ export const loginUser = (credentials) => async (dispatch) => {
     };
     
     dispatch(setUser(userData));
-    
-    // User bilgilerini de localStorage'a kaydet
     localStorage.setItem('user', JSON.stringify(userData));
     
     return { success: true };
@@ -78,67 +94,58 @@ export const loginUser = (credentials) => async (dispatch) => {
 };
 
 export const logoutUser = () => (dispatch) => {
-  // Local storage'dan token'ı sil
   localStorage.removeItem('token');
-  
-  // Axios headers'dan Authorization'ı kaldır
   delete axiosInstance.defaults.headers.common['Authorization'];
-  
-  // Store'daki user bilgisini temizle
   dispatch(setUser({}));
-  
+  localStorage.removeItem('user'); // Also clear user data
   return { success: true };
 };
 
 export const verifyToken = () => async (dispatch) => {
   try {
-    // localStorage'dan token'ı al
     const token = localStorage.getItem('token');
     
     if (!token) {
       return { success: false };
     }
 
-    // Axios header'ına token'ı ekle
     axiosInstance.defaults.headers.common['Authorization'] = token;
 
-    // Verify request'i yap
     const response = await axiosInstance.get('/verify');
     
-    // User bilgilerini store'a kaydet
-    dispatch(setUser({
+    const userData = {
       name: response.data.name,
       email: response.data.email,
       role_id: response.data.role_id
-    }));
+    };
 
-    // Yeni token'ı kaydet
-    localStorage.setItem('token', response.data.token);
-    axiosInstance.defaults.headers.common['Authorization'] = response.data.token;
+    dispatch(setUser(userData));
+    localStorage.setItem('user', JSON.stringify(userData));
+
+    if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        axiosInstance.defaults.headers.common['Authorization'] = response.data.token;
+    }
 
     return { success: true };
   } catch (error) {
-    // Token geçersizse temizle
     localStorage.removeItem('token');
     delete axiosInstance.defaults.headers.common['Authorization'];
     dispatch(setUser({}));
-    
     return { success: false, error: error.response?.data?.message };
   }
 };
 
-// Yeni bir fonksiyon ekleyelim
 export const checkAuthStatus = () => async (dispatch) => {
   const token = localStorage.getItem('token');
   const userData = localStorage.getItem('user');
 
   if (token && userData) {
-    // Token'ı axios instance'ına ekle
-    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    
-    // User bilgilerini store'a yükle
+    axiosInstance.defaults.headers.common['Authorization'] = token;
     dispatch(setUser(JSON.parse(userData)));
     return true;
   }
   return false;
-}; 
+};
+
+export default clientSlice.reducer;

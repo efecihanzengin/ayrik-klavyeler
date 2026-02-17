@@ -25,7 +25,7 @@ const SignUpPage = () => {
       try {
         const response = await axiosInstance.get('/roles');
         setRoles(response.data);
-      } catch (err) {
+      } catch {
         setError('Failed to fetch roles');
       } finally {
         setIsLoading(false);

@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import AddressForm from '../components/AddressForm';
 import CardForm from '../components/CardForm';
 import { Edit, Trash2, Plus, Check, CreditCard } from 'lucide-react';
-import { clearCart } from "../store/actions/cartActions";
+import { clearCart } from "../store/slices/cartSlice";
 
 const OrderPage = () => {
   const navigate = useNavigate();
@@ -35,11 +35,11 @@ const OrderPage = () => {
   const [orderSuccess, setOrderSuccess] = useState(false);
   
   const cart = useSelector(state => state.cart.cart);
-  const user = useSelector(state => state.client.user);
 
   useEffect(() => {
     fetchAddresses();
     fetchCards();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAddresses = async () => {
@@ -115,7 +115,7 @@ const OrderPage = () => {
       }
       
       fetchAddresses();
-    } catch (err) {
+    } catch {
       toast.error('Adres silinirken hata oluştu');
     }
   };
@@ -141,7 +141,7 @@ const OrderPage = () => {
       }
       
       fetchCards();
-    } catch (err) {
+    } catch {
       toast.error('Kart silinirken hata oluştu');
     }
   };
@@ -625,8 +625,8 @@ const OrderPage = () => {
                       className="mt-1"
                     />
                     <label htmlFor="termsCheck" className="text-sm text-gray-600">
-                      <span className="text-blue-500 hover:underline cursor-pointer">Ön Bilgilendirme Koşulları</span>'nı ve 
-                      <span className="text-blue-500 hover:underline cursor-pointer"> Mesafeli Satış Sözleşmesi</span>'ni 
+                      <span className="text-blue-500 hover:underline cursor-pointer">Ön Bilgilendirme Koşulları</span>&apos;nı ve 
+                      <span className="text-blue-500 hover:underline cursor-pointer"> Mesafeli Satış Sözleşmesi</span>&apos;ni 
                       okudum, onaylıyorum.
                     </label>
                   </div>

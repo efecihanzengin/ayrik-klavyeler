@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import PageContent from './layout/PageContent'
 import HomePage from './pages/HomePage'
 import ShopPage from './pages/ShopPage'
 import PricingPage from './pages/PricingPage'
@@ -9,11 +8,11 @@ import BlogPage from './pages/BlogPage'
 import LegalPage from './pages/LegalPage'
 import SignUpPage from './pages/SignUpPage'
 import AuthPage from './pages/AuthPage'
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { verifyToken, checkAuthStatus } from './store/actions/clientActions';
+import { checkAuthStatus } from './store/slices/clientSlice';
 import Layout from './layout/Layout';
 import ProductDetail from './pages/ProductDetail';
 import CartPage from './pages/CartPage';

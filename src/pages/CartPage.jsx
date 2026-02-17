@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash2, ArrowLeft, ChevronRight } from 'lucide-react';
-import { removeFromCart, updateCartItem } from '../store/actions/cartActions';
+import { removeFromCart, updateCartItem } from '../store/slices/cartSlice';
 
 const CartPage = () => {
   const cart = useSelector(state => state.cart.cart);

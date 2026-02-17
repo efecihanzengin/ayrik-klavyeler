@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProductDetail, clearProductDetail } from '../store/actions/productActions';
+import { fetchProductDetail, clearProductDetail } from '../store/slices/productSlice';
 import { Loader, ArrowLeft } from 'lucide-react';
-import { addToCart } from '../store/actions/cartActions';
+import { addToCart } from '../store/slices/cartSlice';
 
 const ProductDetail = () => {
   const { productId } = useParams();

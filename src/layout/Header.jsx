@@ -1,10 +1,10 @@
-import { Menu, Search, ShoppingCart, User, ChevronDown, Package } from 'lucide-react'
+import { Menu, Search, ShoppingCart, ChevronDown, Package } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { logoutUser } from '../store/actions/clientActions'
+import { logoutUser } from '../store/slices/clientSlice'
 import { toast } from 'react-toastify'
-import { fetchCategories } from '../store/actions/productActions'
+import { fetchCategories } from '../store/slices/productSlice'
 import CartDropdown from '../components/CartDropdown'
 
 const Header = () => {
@@ -32,10 +32,7 @@ const Header = () => {
     navigate('/')
   }
 
-  const handleAuthClick = () => {
-    console.log('Auth button clicked')
-    navigate('/auth')
-  }
+
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-40">

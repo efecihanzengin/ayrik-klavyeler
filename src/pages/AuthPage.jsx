@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import axiosInstance from '../api/axios';
-import { setUser, loginUser } from '../store/actions/clientActions';
+import { loginUser } from '../store/slices/clientSlice';
 import { toast } from 'react-toastify';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -41,7 +41,7 @@ const AuthPage = () => {
       try {
         const response = await axiosInstance.get('/roles');
         setRoles(response.data);
-      } catch (err) {
+      } catch {
         setError('Failed to fetch roles');
       } finally {
         setIsLoading(false);
@@ -69,7 +69,7 @@ const AuthPage = () => {
         toast.error(result.error);
         setError(result.error);
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred during login');
     } finally {
       setIsLoading(false);
